@@ -367,23 +367,12 @@ We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) f
 - Add JSDoc comments for public APIs
 - Write tests for new features
 
-## 📄 License
-
-MIT License - see [LICENSE](LICENSE) file for details.
-
 ## 🙏 Acknowledgments
 
 - Built for Zemenay Tech Solutions hackathon
 - Inspired by modern CMS solutions
 - Uses amazing open-source libraries
 
-## 📞 Support
 
-- **Documentation**: [docs.zemenay.com/modular-blog](https://docs.zemenay.com/modular-blog)
-- **Issues**: [GitHub Issues](https://github.com/zemenay/modular-blog/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/zemenay/modular-blog/discussions)
-- **Email**: support@zemenay.com
 
----
-
-Made with ❤️ by [Zemenay Tech Solutions](https://zemenay.com)
+Made with ❤️ by SlowMoon for [Zemenay Tech Solutions](https://www.zemenaytech.com/)
