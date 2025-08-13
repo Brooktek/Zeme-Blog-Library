@@ -1,77 +1,78 @@
 # Installation Guide
 
-This guide will walk you through integrating the Zeme Blog System into your Next.js project using the official CLI.
+This guide provides a complete walkthrough for integrating the Zeme Blog System into your Next.js project.
 
 ## Prerequisites
 
-Before you begin, ensure you have a Next.js project with the following installed:
-- **TypeScript**
-- **Tailwind CSS**
+Before you begin, ensure you have a Next.js project with **TypeScript** and **Tailwind CSS** enabled.
 
-## Step 1: Install the Package
+## Step 1: Create a Supabase Project
 
-In your Next.js project directory, install the `zeme-blog-system` package from npm:
+The blog system uses Supabase for its backend. If you don't have one, create a new project:
 
-```bash
-npm install zeme-blog-system
+1.  Go to [supabase.com](https://supabase.com/) and sign in.
+2.  Click **New project** and give it a name.
+3.  Navigate to **Project Settings** > **API**.
+4.  You will need the following information for the next step:
+    *   **Project URL**
+    *   **Project API keys** (`anon` and `service_role`)
+
+## Step 2: Set Up Environment Variables
+
+Create a new file named `.env.local` in the root of your Next.js project and add your Supabase credentials:
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=YOUR_SUPABASE_URL
+NEXT_PUBLIC_SUPABASE_ANON_KEY=YOUR_SUPABASE_ANON_KEY
+SUPABASE_SERVICE_ROLE_KEY=YOUR_SUPABASE_SERVICE_ROLE_KEY
 ```
 
-## Step 2: Run the `install` Command
+Replace the placeholder values with the actual keys from your Supabase dashboard.
 
-The `install` command sets up the core files, styles, and configurations needed for the blog system.
+## Step 3: Install and Run the CLI
+
+Now, install the package and run the interactive installer:
 
 ```bash
+# 1. Install the package from npm
+npm install zeme-blog-system
+
+# 2. Run the installer
 npx zeme-blog-system install
 ```
 
-This command will:
-- Install peer dependencies (like Radix UI).
-- Modify your `tailwind.config.ts`.
-- Add necessary global CSS styles.
+The `install` command will automatically copy all the required files—including API routes, admin pages, and public components—into your project.
 
-## Step 3: Run the `init` Command
+## Step 4: Set Up the Database Schema
 
-The `init` command configures the backend aspects of your blog, such as the database connection. You will be prompted to enter your Supabase credentials.
+The installer adds the complete database schema to `templates/scripts/schema.sql`.
 
-```bash
-npx zeme-blog-system init
-```
+1.  In your Supabase dashboard, go to the **SQL Editor**.
+2.  Click **New query**.
+3.  Copy the entire content of the `schema.sql` file and paste it into the editor.
+4.  Click **Run** to create the `posts`, `categories`, `tags`, and `posts_tags` tables.
 
-Make sure you have your Supabase URL and `anon` key ready for this step.
+## Step 5: Start the Development Server
 
-## Step 4: Add Components
-
-Use the `add` command to add individual blog components to your project. The components will be added directly to your `components` directory, giving you full control over them.
+That's it! Start your development server to see the blog in action:
 
 ```bash
-npx zeme-blog-system add <component-name>
+npm run dev
 ```
 
-### Available Components
+- Your public-facing blog will be available at `/blog`.
+- Your admin dashboard will be at `/admin`.
 
-- `post-card`
-- `post-list`
-- `post-detail`
-- `admin-dashboard`
-- `post-form`
-- `stats-card`
+## Next Steps
 
-### Example
-
-To add the main blog post list, run:
-
-```bash
-npx zeme-blog-system add post-list
-```
-
-That's it! You now have a fully integrated and customizable blog in your Next.js application.
-\`\`\`
+- **Customize Components**: All components are now in your project's `/components/blog` directory. Feel free to modify them to match your brand.
+- **Deploy**: Deploy your application to any Next.js hosting provider like Vercel or Netlify, ensuring your environment variables are set.
 
 ## Configuration
 
 Customize your blog by editing `blog.config.js`:
 
-\`\`\`js
+```js
 const blogConfig = {
   title: "My Blog",
   description: "A modern blog built with Next.js",
@@ -83,7 +84,7 @@ const blogConfig = {
     darkMode: true
   }
 }
-\`\`\`
+```
 
 ## Admin Dashboard
 
@@ -108,7 +109,7 @@ Similar endpoints exist for categories and tags.
 
 The components use Tailwind CSS with a dark theme. Customize the colors in your `tailwind.config.js`:
 
-\`\`\`js
+```js
 module.exports = {
   theme: {
     extend: {
@@ -121,7 +122,7 @@ module.exports = {
     }
   }
 }
-\`\`\`
+```
 
 ### Components
 

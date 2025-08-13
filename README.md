@@ -1,355 +1,57 @@
 # Zeme Blog System
 
-A production-ready, modular blog system for Next.js applications with Supabase backend. Available as `zeme-blog-system` on npm.
+A production-ready, modular blog system for Next.js applications with a Supabase backend. Available as `zeme-blog-system` on npm.
 
-## 🚀 Features
+## Features
 
-- **Plug-and-Play**: Install via npm and integrate in minutes
-- **Modern Stack**: Next.js 15, TypeScript, Tailwind CSS, Supabase
-- **Admin Dashboard**: Full-featured admin interface for content management
-- **SEO Optimized**: Built-in meta tags, structured data, and performance optimization
-- **Responsive Design**: Mobile-first design with dark theme support
-- **Type Safe**: Full TypeScript support with comprehensive type definitions
-- **Modular Architecture**: Use only the components you need
-- **REST API**: Complete API for headless usage
+- **Plug-and-Play**: Install via npm and integrate in minutes with a single CLI command.
+- **Modern Stack**: Built with Next.js (App Router), TypeScript, and Tailwind CSS.
+- **Supabase Backend**: Uses Supabase for database and authentication.
+- **Full-Featured Admin**: A complete admin dashboard to manage posts, categories, and tags.
+- **Component-Based**: Includes a set of clean, reusable components for your public-facing blog.
+- **Responsive Design**: Mobile-first design with dark theme support.
+- **Type Safe**: Full TypeScript support for all components and APIs.
 
-## 🚀 Quick Start
+## Quick Start
 
-Get up and running with the Zeme Blog System in just a few commands.
+Get up and running with the Zeme Blog System in just two steps.
 
-### 1. Create a Next.js Project
+### 1. Install the Package
 
-First, create a new Next.js application. When prompted, make sure to select **TypeScript** and **Tailwind CSS**.
-
-```bash
-npx create-next-app@latest my-blog
-cd my-blog
-```
-
-### 2. Install the Blog System
-
-Install the package and run the interactive setup commands:
+In your Next.js project directory, install the package from npm:
 
 ```bash
-# Install the package
 npm install zeme-blog-system
+```
 
-# Run the installer to set up core files and dependencies
+### 2. Run the Installer
+
+Run the `install` command to automatically copy all the necessary routes, components, and libraries into your project:
+
+```bash
 npx zeme-blog-system install
-
-# Run the initializer to configure your database
-npx zeme-blog-system init
 ```
 
-### 3. Add Components
+The installer will guide you through the required setup steps.
 
-Add the components you need to your project. They will be copied directly into your `components` directory.
+For a complete walkthrough, including setting up your Supabase project and environment variables, see the [**Installation Guide**](./INSTALL.md).
 
-```bash
-# Add the main blog post list
-npx zeme-blog-system add post-list
+## What's Included?
 
-# Add the post detail page component
-npx zeme-blog-system add post-detail
-```
+The CLI installer adds the following to your project:
 
-### 4. Start the Development Server
+- **`/app/admin/**`**: The complete admin dashboard for managing content.
+- **`/app/api/admin/**`**: All backend API routes for CRUD operations.
+- **`/app/blog/**`**: Basic public-facing pages to display posts.
+- **`/components/blog/**`**: Reusable components like `BlogPostCard` and `BlogPostDetail`.
+- **`/lib/**`**: Supabase client setup and helper functions.
+- **`/templates/scripts/schema.sql`**: The complete database schema to run in your Supabase project.
 
-```bash
-npm run dev
-```
+## Acknowledgments
 
-Visit the routes you created (e.g., `/blog`) to see your blog in action!
+- Built for the Zemenay Tech Solutions hackathon.
+- Inspired by modern headless CMS solutions.
 
-For more detailed instructions, see the [Installation Guide](./INSTALL.md).
-
-## 🏗️ Architecture
-
-### Components
-
-- **BlogPostList**: Displays paginated list of blog posts with filtering
-- **BlogPostCard**: Individual post preview with metadata
-- **BlogPostDetail**: Full post view with related posts
-- **AdminLayout**: Admin dashboard layout with navigation
-- **PostForm**: Create/edit post form with rich features
-
-### API Routes
-
-- `GET /api/blog/posts` - List posts with filtering
-- `GET /api/blog/posts/[id]` - Get post by ID
-- `GET /api/blog/posts/slug/[slug]` - Get post by slug
-- `POST /api/blog/posts` - Create new post
-- `PUT /api/blog/posts/[id]` - Update post
-- `DELETE /api/blog/posts/[id]` - Delete post
-
-Similar endpoints for categories and tags.
-
-### Database Schema
-
-\`\`\`sql
--- Core tables
-blog_posts (id, title, slug, content, status, published_at, ...)
-blog_categories (id, name, slug, description, ...)
-blog_tags (id, name, slug, ...)
-blog_post_tags (post_id, tag_id) -- Junction table
-\`\`\`
-
-## 🎨 Customization
-
-### Styling
-
-The system uses Tailwind CSS with a dark theme. Customize colors in your `tailwind.config.js`:
-
-\`\`\`js
-module.exports = {
-  theme: {
-    extend: {
-      colors: {
-        primary: {
-          DEFAULT: '#4318D1', // Purple theme
-          foreground: '#FFFFFF',
-        }
-      }
-    }
-  }
-}
-\`\`\`
-
-### Configuration
-
-Edit `blog.config.js` to customize behavior:
-
-\`\`\`js
-const blogConfig = {
-  title: "My Blog",
-  description: "A modern blog",
-  postsPerPage: 10,
-  enableComments: false,
-  enableSearch: true,
-  theme: {
-    primaryColor: "#4318D1",
-    darkMode: true
-  }
-}
-\`\`\`
-
-## 📚 Usage Examples
-
-### Basic Blog Page
-
-\`\`\`tsx
-import { BlogPostList } from '@/components/blog/blog-post-list'
-import { getBlogPosts } from '@/lib/blog-api'
-
-export default async function BlogPage() {
-  const posts = await getBlogPosts({ limit: 10 })
-  
-  return (
-    <div className="container mx-auto px-4 py-12">
-      <h1 className="text-4xl font-bold mb-8">Blog</h1>
-      <BlogPostList initialPosts={posts} />
-    </div>
-  )
-}
-\`\`\`
-
-### Custom Post Card
-
-\`\`\`tsx
-import { BlogPostCard } from '@/components/blog/blog-post-card'
-
-export function CustomBlogPage({ posts }) {
-  return (
-    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-      {posts.map(post => (
-        <BlogPostCard key={post.id} post={post} />
-      ))}
-    </div>
-  )
-}
-\`\`\`
-
-### API Usage
-
-\`\`\`tsx
-import { BlogApiClient } from '@zemenay/modular-blog'
-
-// Get posts
-const { data: posts } = await BlogApiClient.getPosts({
-  limit: 5,
-  category: 'technology'
-})
-
-// Create post
-await BlogApiClient.createPost({
-  title: 'New Post',
-  slug: 'new-post',
-  content: 'Post content...',
-  status: 'published'
-})
-\`\`\`
-
-## 🚀 Deployment
-
-### Vercel (Recommended)
-
-1. Connect your GitHub repository to Vercel
-2. Add environment variables in Vercel dashboard
-3. Deploy automatically on push
-
-### Environment Variables
-
-\`\`\`env
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
-\`\`\`
-
-### Other Platforms
-
-The system works with any Next.js hosting platform:
-- Netlify
-- Railway
-- DigitalOcean App Platform
-- Self-hosted
-
-## 🛠️ Development
-
-### Local Setup
-
-\`\`\`bash
-git clone https://github.com/zemenay/modular-blog.git
-cd modular-blog
-npm install
-npm run dev
-\`\`\`
-
-### Building
-
-\`\`\`bash
-npm run build
-\`\`\`
-
-### Testing
-
-\`\`\`bash
-npm run test
-npm run test:e2e
-\`\`\`
-
-## 📖 API Documentation
-
-### Posts API
-
-#### GET /api/blog/posts
-
-Get paginated list of posts.
-
-**Query Parameters:**
-- `limit` (number): Number of posts to return
-- `category` (string): Filter by category slug
-- `tag` (string): Filter by tag slug
-- `status` (string): Filter by status (published, draft, archived)
-
-**Response:**
-\`\`\`json
-{
-  "data": [
-    {
-      "id": "uuid",
-      "title": "Post Title",
-      "slug": "post-title",
-      "excerpt": "Post excerpt...",
-      "content": "Full post content...",
-      "status": "published",
-      "published_at": "2024-01-01T00:00:00Z",
-      "blog_categories": {
-        "id": "uuid",
-        "name": "Technology",
-        "slug": "technology"
-      },
-      "blog_post_tags": [
-        {
-          "blog_tags": {
-            "id": "uuid",
-            "name": "React",
-            "slug": "react"
-          }
-        }
-      ]
-    }
-  ]
-}
-\`\`\`
-
-#### POST /api/blog/posts
-
-Create a new post.
-
-**Request Body:**
-\`\`\`json
-{
-  "title": "Post Title",
-  "slug": "post-title",
-  "excerpt": "Post excerpt",
-  "content": "Full post content",
-  "featured_image_url": "https://example.com/image.jpg",
-  "category_id": "uuid",
-  "status": "published",
-  "meta_title": "SEO Title",
-  "meta_description": "SEO Description",
-  "tag_ids": ["uuid1", "uuid2"]
-}
-\`\`\`
-
-### Categories API
-
-#### GET /api/blog/categories
-
-Get all categories.
-
-#### POST /api/blog/categories
-
-Create a new category.
-
-**Request Body:**
-\`\`\`json
-{
-  "name": "Category Name",
-  "slug": "category-name",
-  "description": "Category description"
-}
-\`\`\`
-
-### Tags API
-
-Similar to categories API but for tags.
-
-## 🤝 Contributing
-
-We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
-
-### Development Workflow
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests
-5. Submit a pull request
-
-### Code Style
-
-- Use TypeScript for all new code
-- Follow the existing code style
-- Add JSDoc comments for public APIs
-- Write tests for new features
-
-## 🙏 Acknowledgments
-
-- Built for Zemenay Tech Solutions hackathon
-- Inspired by modern CMS solutions
-- Uses amazing open-source libraries
-
-
+---
 
 Made with ❤️ by SlowMoon for [Zemenay Tech Solutions](https://www.zemenaytech.com/)
