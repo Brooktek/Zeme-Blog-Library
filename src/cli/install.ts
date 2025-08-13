@@ -43,8 +43,14 @@ export async function installBlog(options: InstallOptions = {}) {
       name: "blogPath",
       message: "Blog route path (e.g., /blog):",
       initial: "/blog",
+      validate: (value: string) => value.startsWith('/') ? true : 'Path must start with a /'
     },
   ])
+
+  if (!response.blogPath) {
+    console.log(chalk.yellow("Installation cancelled."))
+    process.exit(0)
+  }
 
   const spinner = ora("Installing blog components...").start()
 
@@ -61,7 +67,10 @@ export async function installBlog(options: InstallOptions = {}) {
     }
 
     await updateConfigFiles(response.blogPath)
-    spinner.text = "Configuration updated..."
+    spinner.text = "Page routes configured..."
+
+    await updateTsConfig()
+    spinner.text = "TypeScript config updated..."
 
     if (!options.skipDeps) {
       await installDependencies()
@@ -203,9 +212,55 @@ async function updateConfigFiles(blogPath: string) {
 }
 
 async function installDependencies() {
-  const dependencies = ["@supabase/supabase-js", "lucide-react"]
+  const dependencies = [
+    "@supabase/supabase-js",
+    "lucide-react",
+    "@hookform/resolvers",
+    "@radix-ui/react-accordion",
+    "@radix-ui/react-alert-dialog",
+    "@radix-ui/react-aspect-ratio",
+    "@radix-ui/react-avatar",
+    "@radix-ui/react-checkbox",
+    "@radix-ui/react-collapsible",
+    "@radix-ui/react-context-menu",
+    "@radix-ui/react-dialog",
+    "@radix-ui/react-dropdown-menu",
+    "@radix-ui/react-hover-card",
+    "@radix-ui/react-label",
+    "@radix-ui/react-menubar",
+    "@radix-ui/react-navigation-menu",
+    "@radix-ui/react-popover",
+    "@radix-ui/react-progress",
+    "@radix-ui/react-radio-group",
+    "@radix-ui/react-scroll-area",
+    "@radix-ui/react-select",
+    "@radix-ui/react-separator",
+    "@radix-ui/react-slider",
+    "@radix-ui/react-slot",
+    "@radix-ui/react-switch",
+    "@radix-ui/react-tabs",
+    "@radix-ui/react-toast",
+    "@radix-ui/react-toggle",
+    "@radix-ui/react-toggle-group",
+    "@radix-ui/react-tooltip",
+    "class-variance-authority",
+    "clsx",
+    "cmdk",
+    "date-fns",
+    "embla-carousel-react",
+    "input-otp",
+    "next-themes",
+    "react-day-picker",
+    "react-hook-form",
+    "react-resizable-panels",
+    "recharts",
+    "sonner",
+    "tailwind-merge",
+    "tailwindcss-animate",
+    "vaul"
+  ];
 
-  execSync(`npm install ${dependencies.join(" ")}`, { stdio: "inherit" })
+  execSync(`npm install ${dependencies.join(" ")}`, { stdio: "inherit" });
 }
 
 async function setupDatabase() {
@@ -218,4 +273,21 @@ async function setupDatabase() {
 
   console.log(chalk.blue("\n📊 Database scripts copied to ./scripts/"))
   console.log(chalk.gray("Run these scripts in your Supabase SQL editor or use the Supabase CLI"))
+}
+
+async function updateTsConfig() {
+  const tsConfigPath = path.join(process.cwd(), "tsconfig.json");
+  if (!fs.existsSync(tsConfigPath)) {
+    console.warn(chalk.yellow("⚠️  tsconfig.json not found, skipping..."));
+    return;
+  }
+
+  const tsConfig = await fs.readJson(tsConfigPath);
+  
+  tsConfig.compilerOptions = tsConfig.compilerOptions || {};
+  tsConfig.compilerOptions.baseUrl = ".";
+  tsConfig.compilerOptions.paths = tsConfig.compilerOptions.paths || {};
+  tsConfig.compilerOptions.paths["@/*"] = ["./*"];
+
+  await fs.writeJson(tsConfigPath, tsConfig, { spaces: 2 });
 }
