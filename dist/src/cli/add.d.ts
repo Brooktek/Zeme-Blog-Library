@@ -1,5 +1,3 @@
-interface AddOptions {
-    force?: boolean;
-}
-export declare function addComponent(componentName: string, options?: AddOptions): Promise<void>;
-export {};
+export declare function addComponent(templatePath: string, options: {
+    force: boolean;
+}): Promise<void>;

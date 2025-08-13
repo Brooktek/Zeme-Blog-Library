@@ -3,183 +3,90 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.installBlog = installBlog;
+exports.installDependencies = installDependencies;
 const fs_extra_1 = __importDefault(require("fs-extra"));
 const path_1 = __importDefault(require("path"));
-const child_process_1 = require("child_process");
 const chalk_1 = __importDefault(require("chalk"));
 const ora_1 = __importDefault(require("ora"));
-const prompts_1 = __importDefault(require("prompts"));
-async function installBlog(options = {}) {
-    console.log(chalk_1.default.blue.bold("🚀 Installing Modular Blog System\n"));
-    const packageJsonPath = path_1.default.join(process.cwd(), "package.json");
-    if (!fs_extra_1.default.existsSync(packageJsonPath)) {
-        console.error(chalk_1.default.red("❌ No package.json found. Please run this command in a Next.js project root."));
-        process.exit(1);
+const child_process_1 = require("child_process");
+// Define the peer dependencies that may be required by the components.
+// This list can be expanded as more components with specific dependencies are added.
+const PEER_DEPENDENCIES = [
+    '@supabase/supabase-js',
+    'lucide-react', // Commonly used for icons in shadcn/ui
+    'class-variance-authority',
+    'clsx',
+    'tailwind-merge',
+];
+// Function to detect the package manager by checking for lock files.
+async function detectPackageManager() {
+    const cwd = process.cwd();
+    if (await fs_extra_1.default.pathExists(path_1.default.join(cwd, 'pnpm-lock.yaml'))) {
+        return 'pnpm';
     }
-    const packageJson = await fs_extra_1.default.readJson(packageJsonPath);
-    if (!packageJson.dependencies?.next && !packageJson.devDependencies?.next) {
-        console.error(chalk_1.default.red("❌ This doesn't appear to be a Next.js project."));
-        process.exit(1);
+    if (await fs_extra_1.default.pathExists(path_1.default.join(cwd, 'yarn.lock'))) {
+        return 'yarn';
     }
-    const response = await (0, prompts_1.default)([
-        {
-            type: "confirm",
-            name: "includeAdmin",
-            message: "Include admin dashboard?",
-            initial: true,
-        },
-        {
-            type: "confirm",
-            name: "setupDatabase",
-            message: "Set up database schema automatically?",
-            initial: true,
-        },
-        {
-            type: "text",
-            name: "blogPath",
-            message: "Blog route path (e.g., /blog):",
-            initial: "/blog",
-        },
-    ]);
-    const spinner = (0, ora_1.default)("Installing blog components...").start();
-    try {
-        await copyComponents(options.force);
-        spinner.text = "Components installed...";
-        await copyApiRoutes(options.force);
-        spinner.text = "API routes installed...";
-        if (response.includeAdmin) {
-            await copyAdminComponents(options.force);
-            spinner.text = "Admin dashboard installed...";
-        }
-        await updateConfigFiles(response.blogPath);
-        spinner.text = "Configuration updated...";
-        if (!options.skipDeps) {
-            await installDependencies();
-            spinner.text = "Dependencies installed...";
-        }
-        if (response.setupDatabase) {
-            await setupDatabase();
-            spinner.text = "Database schema created...";
-        }
-        spinner.succeed(chalk_1.default.green("✅ Modular Blog System installed successfully!"));
-        console.log(chalk_1.default.blue("\n📋 Next Steps:"));
-        console.log(chalk_1.default.gray("1. Set up your Supabase project and add environment variables"));
-        console.log(chalk_1.default.gray("2. Run the database migration scripts"));
-        console.log(chalk_1.default.gray("3. Start your development server: npm run dev"));
-        console.log(chalk_1.default.gray(`4. Visit ${response.blogPath} to see your blog`));
-        if (response.includeAdmin) {
-            console.log(chalk_1.default.gray("5. Visit /admin to access the admin dashboard"));
-        }
-    }
-    catch (error) {
-        spinner.fail(chalk_1.default.red("❌ Installation failed"));
-        console.error(error);
-        process.exit(1);
-    }
+    return 'npm';
 }
-async function copyComponents(force = false) {
-    const packageRoot = path_1.default.resolve(__dirname, "../../../");
-    const templatesDir = path_1.default.join(packageRoot, "templates");
-    const targetDir = process.cwd();
-    const componentFiles = [
-        "components/blog/blog-post-card.tsx",
-        "components/blog/blog-post-list.tsx",
-        "components/blog/blog-post-detail.tsx",
-        "components/blog/category-badge.tsx",
-        "components/blog/tag-badge.tsx",
-        "lib/blog-api.ts",
-        "lib/supabase/client.ts",
-        "lib/api-client.ts",
-    ];
-    for (const file of componentFiles) {
-        const sourcePath = path_1.default.join(templatesDir, file);
-        const targetPath = path_1.default.join(targetDir, file);
-        if (fs_extra_1.default.existsSync(targetPath) && !force) {
-            console.warn(chalk_1.default.yellow(`⚠️  ${file} already exists, skipping...`));
-            continue;
-        }
-        await fs_extra_1.default.ensureDir(path_1.default.dirname(targetPath));
-        await fs_extra_1.default.copy(sourcePath, targetPath);
+// Function to get the correct install command for the detected package manager.
+function getInstallCommand(manager, packages) {
+    const packageList = packages.join(' ');
+    switch (manager) {
+        case 'yarn':
+            return `yarn add ${packageList}`;
+        case 'pnpm':
+            return `pnpm add ${packageList}`;
+        case 'npm':
+        default:
+            return `npm install ${packageList}`;
     }
-}
-async function copyApiRoutes(force = false) {
-    const packageRoot = path_1.default.resolve(__dirname, "../../../");
-    const templatesDir = path_1.default.join(packageRoot, "templates");
-    const targetDir = process.cwd();
-    const apiFiles = [
-        "app/api/blog/posts/route.ts",
-        "app/api/blog/posts/[id]/route.ts",
-        "app/api/blog/posts/slug/[slug]/route.ts",
-        "app/api/blog/categories/route.ts",
-        "app/api/blog/categories/[id]/route.ts",
-        "app/api/blog/tags/route.ts",
-        "app/api/blog/tags/[id]/route.ts",
-        "app/api/admin/stats/route.ts",
-    ];
-    for (const file of apiFiles) {
-        const sourcePath = path_1.default.join(templatesDir, file);
-        const targetPath = path_1.default.join(targetDir, file);
-        if (fs_extra_1.default.existsSync(targetPath) && !force) {
-            console.warn(chalk_1.default.yellow(`⚠️  ${file} already exists, skipping...`));
-            continue;
-        }
-        await fs_extra_1.default.ensureDir(path_1.default.dirname(targetPath));
-        await fs_extra_1.default.copy(sourcePath, targetPath);
-    }
-}
-async function copyAdminComponents(force = false) {
-    const packageRoot = path_1.default.resolve(__dirname, "../../../");
-    const templatesDir = path_1.default.join(packageRoot, "templates");
-    const targetDir = process.cwd();
-    const adminFiles = [
-        "components/admin/admin-layout.tsx",
-        "components/admin/stats-card.tsx",
-        "components/admin/post-form.tsx",
-        "app/admin/layout.tsx",
-        "app/admin/page.tsx",
-        "app/admin/posts/page.tsx",
-        "app/admin/posts/new/page.tsx",
-        "app/admin/categories/page.tsx",
-        "app/admin/tags/page.tsx",
-    ];
-    for (const file of adminFiles) {
-        const sourcePath = path_1.default.join(templatesDir, file);
-        const targetPath = path_1.default.join(targetDir, file);
-        if (fs_extra_1.default.existsSync(targetPath) && !force) {
-            console.warn(chalk_1.default.yellow(`⚠️  ${file} already exists, skipping...`));
-            continue;
-        }
-        await fs_extra_1.default.ensureDir(path_1.default.dirname(targetPath));
-        await fs_extra_1.default.copy(sourcePath, targetPath);
-    }
-}
-async function updateConfigFiles(blogPath) {
-    const blogPagePath = path_1.default.join(process.cwd(), `app${blogPath}/page.tsx`);
-    const blogSlugPath = path_1.default.join(process.cwd(), `app${blogPath}/[slug]/page.tsx`);
-    const categoryPagePath = path_1.default.join(process.cwd(), `app${blogPath}/category/[slug]/page.tsx`);
-    const tagPagePath = path_1.default.join(process.cwd(), `app${blogPath}/tag/[slug]/page.tsx`);
-    await fs_extra_1.default.ensureDir(path_1.default.dirname(blogPagePath));
-    await fs_extra_1.default.ensureDir(path_1.default.dirname(blogSlugPath));
-    await fs_extra_1.default.ensureDir(path_1.default.dirname(categoryPagePath));
-    await fs_extra_1.default.ensureDir(path_1.default.dirname(tagPagePath));
-    const packageRoot = path_1.default.resolve(__dirname, "../../../");
-    const templatesDir = path_1.default.join(packageRoot, "templates");
-    await fs_extra_1.default.copy(path_1.default.join(templatesDir, "app/blog/page.tsx"), blogPagePath);
-    await fs_extra_1.default.copy(path_1.default.join(templatesDir, "app/blog/[slug]/page.tsx"), blogSlugPath);
-    await fs_extra_1.default.copy(path_1.default.join(templatesDir, "app/blog/category/[slug]/page.tsx"), categoryPagePath);
-    await fs_extra_1.default.copy(path_1.default.join(templatesDir, "app/blog/tag/[slug]/page.tsx"), tagPagePath);
 }
 async function installDependencies() {
-    const dependencies = ["@supabase/supabase-js", "lucide-react"];
-    (0, child_process_1.execSync)(`npm install ${dependencies.join(" ")}`, { stdio: "inherit" });
-}
-async function setupDatabase() {
-    const packageRoot = path_1.default.resolve(__dirname, "../../../");
-    const templatesDir = path_1.default.join(packageRoot, "templates");
-    const scriptsDir = path_1.default.join(process.cwd(), "scripts");
-    await fs_extra_1.default.ensureDir(scriptsDir);
-    await fs_extra_1.default.copy(path_1.default.join(templatesDir, "scripts"), scriptsDir);
-    console.log(chalk_1.default.blue("\n📊 Database scripts copied to ./scripts/"));
-    console.log(chalk_1.default.gray("Run these scripts in your Supabase SQL editor or use the Supabase CLI"));
+    console.log(chalk_1.default.blue.bold('\n📦 Checking and installing peer dependencies...'));
+    const spinner = (0, ora_1.default)('Reading project configuration...').start();
+    let missingDependencies = [];
+    try {
+        // 1. Read the user's package.json to find installed packages.
+        const packageJsonPath = path_1.default.join(process.cwd(), 'package.json');
+        if (!await fs_extra_1.default.pathExists(packageJsonPath)) {
+            spinner.fail(chalk_1.default.red('`package.json` not found. Please run this in a valid project directory.'));
+            process.exit(1);
+        }
+        const packageJson = await fs_extra_1.default.readJson(packageJsonPath);
+        const installedDependencies = new Set([
+            ...Object.keys(packageJson.dependencies || {}),
+            ...Object.keys(packageJson.devDependencies || {}),
+        ]);
+        // 2. Determine which dependencies are missing.
+        missingDependencies = PEER_DEPENDENCIES.filter((dep) => !installedDependencies.has(dep));
+        if (missingDependencies.length === 0) {
+            spinner.succeed(chalk_1.default.green('✅ All peer dependencies are already installed.'));
+            return;
+        }
+        spinner.text = 'Installing missing dependencies...';
+        // 3. Detect the package manager and run the install command.
+        const packageManager = await detectPackageManager();
+        const installCommand = getInstallCommand(packageManager, missingDependencies);
+        spinner.info(`Detected ${chalk_1.default.cyan(packageManager)}. Running command: ${chalk_1.default.gray(installCommand)}`);
+        await new Promise((resolve, reject) => {
+            (0, child_process_1.exec)(installCommand, (error, stdout, stderr) => {
+                if (error) {
+                    reject(new Error(stderr));
+                }
+                else {
+                    console.log(`\n${stdout}`);
+                    resolve();
+                }
+            });
+        });
+        spinner.succeed(chalk_1.default.green('✅ Successfully installed required dependencies!'));
+    }
+    catch (error) {
+        spinner.fail(chalk_1.default.red('Failed to install dependencies.'));
+        console.error(error.message);
+        console.log(chalk_1.default.yellow('\nPlease try installing the following packages manually:'));
+        console.log(chalk_1.default.gray(missingDependencies.join(' ')));
+        process.exit(1);
+    }
 }

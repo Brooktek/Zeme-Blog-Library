@@ -1,10 +1,9 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import PostForm from '@/components/admin/post-form';
 
-// Define types for the data we'll be fetching
 interface Category {
   id: string;
   name: string;
@@ -15,28 +14,37 @@ interface Tag {
   name: string;
 }
 
-export default function NewPostPage() {
+export default function EditPostPage() {
   const router = useRouter();
+  const params = useParams();
+  const { id } = params;
+
+  const [post, setPost] = useState(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const [tags, setTags] = useState<Tag[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!id) return;
+
     async function fetchData() {
       try {
-        const [catRes, tagRes] = await Promise.all([
+        const [postRes, catRes, tagRes] = await Promise.all([
+          fetch(`/api/admin/posts/${id}`),
           fetch('/api/admin/categories'),
           fetch('/api/admin/tags'),
         ]);
 
-        if (!catRes.ok || !tagRes.ok) {
-          throw new Error('Failed to fetch categories or tags');
+        if (!postRes.ok || !catRes.ok || !tagRes.ok) {
+          throw new Error('Failed to fetch required data');
         }
 
+        const postData = await postRes.json();
         const catData = await catRes.json();
         const tagData = await tagRes.json();
 
+        setPost(postData);
         setCategories(catData);
         setTags(tagData);
       } catch (err: any) {
@@ -47,37 +55,37 @@ export default function NewPostPage() {
     }
 
     fetchData();
-  }, []);
+  }, [id]);
 
   const handleSave = async (formData: any) => {
     try {
-      const response = await fetch('/api/admin/posts', {
-        method: 'POST',
+      const response = await fetch(`/api/admin/posts/${id}`, {
+        method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to create post');
+        throw new Error(errorData.message || 'Failed to update post');
       }
 
-      // On success, redirect to the posts list
       router.push('/admin/posts');
     } catch (err: any) {
       setError(err.message);
-      // Optionally, re-throw the error to be handled in the form component
       throw err;
     }
   };
 
-  if (loading) return <div className="text-center py-10">Loading form...</div>;
+  if (loading) return <div className="text-center py-10">Loading post data...</div>;
   if (error) return <div className="text-center py-10 text-red-500">Error: {error}</div>;
+  if (!post) return <div className="text-center py-10">Post not found.</div>;
 
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold text-gray-800 dark:text-white mb-6">Create New Post</h1>
+      <h1 className="text-2xl font-bold text-gray-800 dark:text-white mb-6">Edit Post</h1>
       <PostForm
+        initialData={post}
         categories={categories}
         tags={tags}
         onSave={handleSave}
