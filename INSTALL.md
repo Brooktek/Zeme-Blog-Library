@@ -1,103 +1,70 @@
 # Installation Guide
 
-## Quick Start
+This guide will walk you through integrating the Zeme Blog System into your Next.js project using the official CLI.
 
-Install the Zeme Blog System in your Next.js project:
+## Prerequisites
+
+Before you begin, ensure you have a Next.js project with the following installed:
+- **TypeScript**
+- **Tailwind CSS**
+
+## Step 1: Install the Package
+
+In your Next.js project directory, install the `zeme-blog-system` package from npm:
 
 ```bash
-npm install zeme-blog-system @supabase/supabase-js
+npm install zeme-blog-system
 ```
 
-## Manual Installation
+## Step 2: Run the `install` Command
 
-### 1. Install Dependencies
+The `install` command sets up the core files, styles, and configurations needed for the blog system.
 
 ```bash
-npm install zeme-blog-system @supabase/supabase-js lucide-react
+npx zeme-blog-system install
 ```
 
-### 2. Set Up Environment Variables
+This command will:
+- Install peer dependencies (like Radix UI).
+- Modify your `tailwind.config.ts`.
+- Add necessary global CSS styles.
 
-Create a `.env.local` file in your Next.js project root:
+## Step 3: Run the `init` Command
 
-```env
-NEXT_PUBLIC_SUPABASE_URL=your-supabase-url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
+The `init` command configures the backend aspects of your blog, such as the database connection. You will be prompted to enter your Supabase credentials.
+
+```bash
+npx zeme-blog-system init
 ```
 
-### 3. Import and Use Components
+Make sure you have your Supabase URL and `anon` key ready for this step.
 
-Import components directly in your Next.js pages:
+## Step 4: Add Components
 
-```tsx
-import { BlogList, BlogPost, AdminDashboard } from 'zeme-blog-system';
+Use the `add` command to add individual blog components to your project. The components will be added directly to your `components` directory, giving you full control over them.
+
+```bash
+npx zeme-blog-system add <component-name>
 ```
 
-### 3. Set Up Environment Variables
+### Available Components
 
-Create a `.env.local` file:
+- `post-card`
+- `post-list`
+- `post-detail`
+- `admin-dashboard`
+- `post-form`
+- `stats-card`
 
-\`\`\`env
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
-\`\`\`
+### Example
 
-### 4. Initialize Configuration
+To add the main blog post list, run:
 
-\`\`\`bash
-npx @zemenay/modular-blog init
-\`\`\`
+```bash
+npx zeme-blog-system add post-list
+```
 
-### 5. Set Up Database
-
-Run the SQL scripts in your Supabase dashboard:
-
-1. Copy the contents of `scripts/01-create-blog-tables.sql`
-2. Run it in your Supabase SQL editor
-3. Copy and run `scripts/02-seed-blog-data.sql`
-
-### 6. Add Blog Routes
-
-Create your blog pages:
-
-\`\`\`tsx
-// app/blog/page.tsx
-import { BlogPostList } from '@/components/blog/blog-post-list'
-import { getBlogPosts, getBlogCategories } from '@/lib/blog-api'
-
-export default async function BlogPage() {
-  const [posts, categories] = await Promise.all([
-    getBlogPosts(),
-    getBlogCategories()
-  ])
-
-  return (
-    <div className="container mx-auto px-4 py-12">
-      <h1 className="text-4xl font-bold mb-8">Blog</h1>
-      <BlogPostList 
-        initialPosts={posts}
-        initialCategories={categories}
-      />
-    </div>
-  )
-}
-\`\`\`
-
-\`\`\`tsx
-// app/blog/[slug]/page.tsx
-import { BlogPostDetail } from '@/components/blog/blog-post-detail'
-import { getBlogPost } from '@/lib/blog-api'
-
-export default async function BlogPostPage({ params }: { params: { slug: string } }) {
-  const post = await getBlogPost(params.slug)
-  
-  if (!post) {
-    notFound()
-  }
-
-  return <BlogPostDetail slug={params.slug} initialPost={post} />
-}
+That's it! You now have a fully integrated and customizable blog in your Next.js application.
 \`\`\`
 
 ## Configuration

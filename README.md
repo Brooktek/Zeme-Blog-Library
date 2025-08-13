@@ -13,78 +13,55 @@ A production-ready, modular blog system for Next.js applications with Supabase b
 - **Modular Architecture**: Use only the components you need
 - **REST API**: Complete API for headless usage
 
+## 🚀 Quick Start
+
+Get up and running with the Zeme Blog System in just a few commands.
+
+### 1. Create a Next.js Project
+
+First, create a new Next.js application. When prompted, make sure to select **TypeScript** and **Tailwind CSS**.
+
 ```bash
-npx create-next-app@latest my-blog --typescript --tailwind --eslint
+npx create-next-app@latest my-blog
 cd my-blog
 ```
 
-### 2. Install the package
+### 2. Install the Blog System
+
+Install the package and run the interactive setup commands:
 
 ```bash
+# Install the package
 npm install zeme-blog-system
+
+# Run the installer to set up core files and dependencies
+npx zeme-blog-system install
+
+# Run the initializer to configure your database
+npx zeme-blog-system init
 ```
 
-### 3. Set up environment variables
+### 3. Add Components
 
-Create a `.env.local` file in your Next.js project root:
+Add the components you need to your project. They will be copied directly into your `components` directory.
 
-```env
-NEXT_PUBLIC_SUPABASE_URL=your-supabase-url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
+```bash
+# Add the main blog post list
+npx zeme-blog-system add post-list
+
+# Add the post detail page component
+npx zeme-blog-system add post-detail
 ```
 
-### 4. Create a Supabase project
-
-1. Go to [Supabase](https://supabase.com) and create a new project
-2. In the SQL Editor, run the following SQL script to set up the database schema:
-
-```sql
--- Create tables and relationships
--- (Include your database schema here)
-```
-
-### 5. Create a blog page
-
-Create a new file at `app/blog/page.tsx`:
-
-```tsx
-import { BlogList } from 'zeme-blog-system';
-
-export default function BlogPage() {
-  return (
-    <main className="container mx-auto px-4 py-8">
-      <h1 className="text-4xl font-bold mb-8">Blog</h1>
-      <BlogList />
-    </main>
-  );
-}
-```
-
-### 6. Start the development server
+### 4. Start the Development Server
 
 ```bash
 npm run dev
 ```
 
-Visit `http://localhost:3000/blog` to see your blog in action!
+Visit the routes you created (e.g., `/blog`) to see your blog in action!
 
-## Admin Dashboard
-
-To access the admin dashboard, create a page at `app/admin/page.tsx`:
-
-```tsx
-import { AdminDashboard } from 'zeme-blog-system';
-
-export default function AdminPage() {
-  return (
-    <div className="min-h-screen bg-gray-100">
-      <AdminDashboard />
-    </div>
-  );
-}
-```
-
-Visit `http://localhost:3000/admin` to access the admin dashboard.
+For more detailed instructions, see the [Installation Guide](./INSTALL.md).
 
 ## 🏗️ Architecture
 

@@ -1,103 +1,80 @@
 # Publishing Guide
 
+This guide provides the steps to publish new versions of the `zeme-blog-system` package to npm.
+
 ## Prerequisites
 
-1. **NPM Account**: Ensure you have an npm account and are logged in:
-   ```bash
-   npm login
-   ```
+- You must have an npm account.
+- You must be logged into your npm account via the CLI:
+  ```bash
+  npm login
+  ```
+- You must have publish access to the `zeme-blog-system` package on npm.
 
-2. **Package Access**: Make sure you have access to publish the `zeme-blog-system` package.
+## Publishing Process
 
-## Publishing Steps
+### Step 1: Build the Package
 
-### 1. Prepare for Publishing
+Before publishing, you must compile the TypeScript source code into JavaScript. This is a critical step that bundles the CLI for production.
 
 ```bash
-# Install dependencies
-npm install
-
-# Build the package
-npm run build
-
-# Test the build
-npm test
+npm run build:all
 ```
 
-### 2. Version Management
+This command creates a `dist` directory with the compiled files.
 
-Choose the appropriate version bump:
+### Step 2: Version the Package
 
-\`\`\`bash
-# Patch version (1.0.0 -> 1.0.1) - Bug fixes
-npm run version:patch
+Use the `npm version` command to bump the package version in `package.json` and create a git tag.
 
-# Minor version (1.0.0 -> 1.1.0) - New features
-npm run version:minor
+Choose one of the following based on the nature of your changes:
 
-# Major version (1.0.0 -> 2.0.0) - Breaking changes
-npm run version:major
-\`\`\`
+- **Patch (for bug fixes):**
+  ```bash
+  npm version patch
+  ```
+- **Minor (for new, non-breaking features):**
+  ```bash
+  npm version minor
+  ```
+- **Major (for breaking changes):**
+  ```bash
+  npm version major
+  ```
 
-### 3. Publish to NPM
+### Step 3: Publish to npm
 
-\`\`\`bash
-# Publish to npm registry
-npm run publish:npm
-\`\`\`
+After building and versioning, publish the package to the npm registry.
 
-Or manually:
-\`\`\`bash
-npm publish --access public
-\`\`\`
+```bash
+npm publish
+```
 
-### 4. Verify Publication
+This command will publish the files specified in the `files` array of your `package.json`.
 
-Check that your package is available:
-\`\`\`bash
-npm view @zemenay/modular-blog
-\`\`\`
+## Local Testing Before Publishing
 
-## Testing Before Publishing
+To avoid publishing broken versions, you should always test your package locally first.
 
-### Local Testing
+1.  **Build the package:**
+    ```bash
+    npm run build:all
+    ```
 
-1. **Pack the package locally**:
-   \`\`\`bash
-   npm pack
-   \`\`\`
+2.  **Create a local tarball:**
+    ```bash
+    npm pack
+    ```
+    This will create a `.tgz` file in your project root (e.g., `zeme-blog-system-0.1.7.tgz`).
 
-2. **Test in another project**:
-   \`\`\`bash
-   cd /path/to/test-project
-   npm install /path/to/zemenay-modular-blog-1.0.0.tgz
-   \`\`\`
+3.  **Test in another project:**
+    Navigate to a separate test project and install the package from the local tarball:
+    ```bash
+    cd /path/to/your/test-project
+    npm install /path/to/your/Zeme-Blog-Library/zeme-blog-system-0.1.7.tgz
+    ```
 
-### Beta Publishing
-
-For testing with beta users:
-\`\`\`bash
-npm publish --tag beta
-\`\`\`
-
-Install beta version:
-\`\`\`bash
-npm install @zemenay/modular-blog@beta
-\`\`\`
-
-## Post-Publishing
-
-1. **Update Documentation**: Ensure README.md reflects the latest version
-2. **Create GitHub Release**: Tag the release on GitHub
-3. **Announce**: Share the release with the community
-
-## Troubleshooting
-
-### Common Issues
-
-1. **Permission Denied**: Ensure you're logged in and have org access
-2. **Version Already Exists**: Bump version number before publishing
-3. **Build Errors**: Check TypeScript compilation and fix errors
+4.  **Verify the installation** by running the CLI commands (`install`, `init`, `add`) in your test project.
 
 ### Rollback
 
