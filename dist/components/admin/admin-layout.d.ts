@@ -1,0 +1,6 @@
+import type React from "react";
+interface AdminLayoutProps {
+    children: React.ReactNode;
+}
+export declare function AdminLayout({ children }: AdminLayoutProps): React.JSX.Element;
+export {};
