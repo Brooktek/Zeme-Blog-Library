@@ -5,7 +5,7 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Plus, Edit, Trash2 } from "lucide-react"
-import { getBlogTags, type BlogTag } from "@/lib/blog-api"
+import { getBlogTags, deleteBlogTag, type BlogTag } from "@/lib/blog-api"
 
 export default function AdminTagsPage() {
   const [tags, setTags] = useState<BlogTag[]>([])
@@ -24,6 +24,17 @@ export default function AdminTagsPage() {
       console.error("Error loading tags:", error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleDelete = async (id: string) => {
+    if (window.confirm("Are you sure you want to delete this tag?")) {
+      try {
+        await deleteBlogTag(id)
+        loadTags() // Refresh the list
+      } catch (error) {
+        console.error("Failed to delete tag:", error)
+      }
     }
   }
 
@@ -68,10 +79,17 @@ export default function AdminTagsPage() {
                 >
                   <h3 className="font-medium">{tag.name}</h3>
                   <div className="flex items-center gap-2">
-                    <Button variant="ghost" size="sm">
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive">
+                    <Link href={`/admin/tags/${tag.id}/edit`}>
+                      <Button variant="ghost" size="sm">
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                    </Link>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-destructive hover:text-destructive"
+                      onClick={() => handleDelete(tag.id)}
+                    >
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
@@ -84,3 +102,4 @@ export default function AdminTagsPage() {
     </div>
   )
 }
+

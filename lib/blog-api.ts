@@ -129,6 +129,54 @@ export async function getBlogTags() {
   return (tags as BlogTag[]) || []
 }
 
+export async function getBlogTag(id: string) {
+  const { data: tag, error } = await supabase
+    .from("blog_tags")
+    .select("*")
+    .eq("id", id)
+    .single()
+
+  if (error) {
+    console.error(`Error fetching blog tag with id ${id}:`, error.message)
+    return null
+  }
+
+  return tag as BlogTag
+}
+
+export async function createBlogTag(tag: Partial<BlogTag>) {
+  const { data, error } = await supabase.from("blog_tags").insert([tag]).select().single()
+
+  if (error) {
+    console.error("Error creating blog tag:", error.message)
+    throw new Error(error.message)
+  }
+
+  return data as BlogTag
+}
+
+export async function updateBlogTag(id: string, updates: Partial<BlogTag>) {
+  const { data, error } = await supabase.from("blog_tags").update(updates).eq("id", id).select().single()
+
+  if (error) {
+    console.error(`Error updating blog tag with id ${id}:`, error.message)
+    throw new Error(error.message)
+  }
+
+  return data as BlogTag
+}
+
+export async function deleteBlogTag(id: string) {
+  const { error } = await supabase.from("blog_tags").delete().eq("id", id)
+
+  if (error) {
+    console.error(`Error deleting blog tag with id ${id}:`, error.message)
+    throw new Error(error.message)
+  }
+
+  return true
+}
+
 export async function getBlogPostsByCategory(category: string, options?: {
   limit?: number
   status?: "draft" | "published" | "archived"
@@ -137,19 +185,8 @@ export async function getBlogPostsByCategory(category: string, options?: {
     .from("blog_posts")
     .select(`
       *,
-      blog_categories (
-        id,
-        name,
-        slug,
-        description
-      ),
-      blog_post_tags (
-        blog_tags (
-          id,
-          name,
-          slug
-        )
-      )
+      blog_categories (id, name, slug, description),
+      blog_post_tags (blog_tags (id, name, slug))
     `)
     .eq("blog_categories.slug", category)
     .order("published_at", { ascending: false })
@@ -182,19 +219,8 @@ export async function getBlogPostsByTag(tag: string, options?: {
     .from("blog_posts")
     .select(`
       *,
-      blog_categories (
-        id,
-        name,
-        slug,
-        description
-      ),
-      blog_post_tags (
-        blog_tags (
-          id,
-          name,
-          slug
-        )
-      )
+      blog_categories (id, name, slug, description),
+      blog_post_tags (blog_tags (id, name, slug))
     `)
     .eq("blog_post_tags.blog_tags.slug", tag)
     .order("published_at", { ascending: false })
@@ -224,19 +250,8 @@ export async function getRelatedPosts(currentPostId: string, categoryId?: string
     .from("blog_posts")
     .select(`
       *,
-      blog_categories (
-        id,
-        name,
-        slug,
-        description
-      ),
-      blog_post_tags (
-        blog_tags (
-          id,
-          name,
-          slug
-        )
-      )
+      blog_categories (id, name, slug, description),
+      blog_post_tags (blog_tags (id, name, slug))
     `)
     .eq("status", "published")
     .neq("id", currentPostId)
