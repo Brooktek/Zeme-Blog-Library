@@ -1,9 +1,136 @@
 import { supabase, type BlogPost, type BlogCategory, type BlogTag } from "./supabase/client"
 
-export async function getBlogPosts(options?: {
+export async function getBlogPosts(options: { category?: string; limit?: number } = {}) {
+  let query = supabase.from("blog_posts").select(`
+    *,
+    blog_categories (*),
+    blog_tags (*)
+  `)
+
+  if (options.category) {
+    const { data: category, error: categoryError } = await supabase
+      .from("blog_categories")
+      .select("id")
+      .eq("slug", options.category)
+      .single()
+
+    if (categoryError) {
+      console.error("Error fetching category for filtering:", categoryError.message)
+      return []
+    }
+
+    if (category) {
+      query = query.eq("category_id", category.id)
+    } else {
+      return []
+    }
+  }
+
+  if (options.limit) {
+    query = query.limit(options.limit)
+  }
+
+  const { data: posts, error } = await query
+
+  if (error) {
+    console.error("Error fetching blog posts:", error.message)
+    throw new Error(error.message)
+  }
+
+  return (posts as BlogPost[]) || []
+}
+
+export async function getBlogPost(slug: string) {
+  const { data: post, error } = await supabase
+    .from("blog_posts")
+    .select(`
+      *,
+      blog_categories (*),
+      blog_tags (*)
+    `)
+    .eq("slug", slug)
+    .single()
+
+  if (error) {
+    console.error(`Error fetching blog post with slug ${slug}:`, error.message)
+    return null
+  }
+
+  return post as BlogPost
+}
+
+export async function getBlogCategories() {
+  const { data: categories, error } = await supabase.from("blog_categories").select("*")
+
+  if (error) {
+    console.error("Error fetching blog categories:", error.message)
+    throw new Error(error.message)
+  }
+
+  return (categories as BlogCategory[]) || []
+}
+
+export async function getBlogCategory(slug: string) {
+  const { data: category, error } = await supabase
+    .from("blog_categories")
+    .select("*")
+    .eq("slug", slug)
+    .single()
+
+  if (error) {
+    console.error(`Error fetching blog category with slug ${slug}:`, error.message)
+    return null
+  }
+
+  return category as BlogCategory
+}
+
+export async function createBlogCategory(category: Partial<BlogCategory>) {
+  const { data, error } = await supabase.from("blog_categories").insert([category]).select().single()
+
+  if (error) {
+    console.error("Error creating blog category:", error.message)
+    throw new Error(error.message)
+  }
+
+  return data as BlogCategory
+}
+
+export async function updateBlogCategory(id: string, updates: Partial<BlogCategory>) {
+  const { data, error } = await supabase.from("blog_categories").update(updates).eq("id", id).select().single()
+
+  if (error) {
+    console.error(`Error updating blog category with id ${id}:`, error.message)
+    throw new Error(error.message)
+  }
+
+  return data as BlogCategory
+}
+
+export async function deleteBlogCategory(id: string) {
+  const { error } = await supabase.from("blog_categories").delete().eq("id", id)
+
+  if (error) {
+    console.error(`Error deleting blog category with id ${id}:`, error.message)
+    throw new Error(error.message)
+  }
+
+  return true
+}
+
+export async function getBlogTags() {
+  const { data: tags, error } = await supabase.from("blog_tags").select("*")
+
+  if (error) {
+    console.error("Error fetching blog tags:", error.message)
+    throw new Error(error.message)
+  }
+
+  return (tags as BlogTag[]) || []
+}
+
+export async function getBlogPostsByCategory(category: string, options?: {
   limit?: number
-  category?: string
-  tag?: string
   status?: "draft" | "published" | "archived"
 }) {
   let query = supabase
@@ -24,16 +151,13 @@ export async function getBlogPosts(options?: {
         )
       )
     `)
+    .eq("blog_categories.slug", category)
     .order("published_at", { ascending: false })
 
   if (options?.status) {
     query = query.eq("status", options.status)
   } else {
     query = query.eq("status", "published")
-  }
-
-  if (options?.category) {
-    query = query.eq("blog_categories.slug", options.category)
   }
 
   if (options?.limit) {
@@ -43,15 +167,18 @@ export async function getBlogPosts(options?: {
   const { data, error } = await query
 
   if (error) {
-    console.error("Error fetching blog posts:", error)
+    console.error("Error fetching blog posts by category:", error)
     return []
   }
 
   return data as BlogPost[]
 }
 
-export async function getBlogPost(slug: string) {
-  const { data, error } = await supabase
+export async function getBlogPostsByTag(tag: string, options?: {
+  limit?: number
+  status?: "draft" | "published" | "archived"
+}) {
+  let query = supabase
     .from("blog_posts")
     .select(`
       *,
@@ -69,38 +196,27 @@ export async function getBlogPost(slug: string) {
         )
       )
     `)
-    .eq("slug", slug)
-    .eq("status", "published")
-    .single()
+    .eq("blog_post_tags.blog_tags.slug", tag)
+    .order("published_at", { ascending: false })
 
-  if (error) {
-    console.error("Error fetching blog post:", error)
-    return null
+  if (options?.status) {
+    query = query.eq("status", options.status)
+  } else {
+    query = query.eq("status", "published")
   }
 
-  return data as BlogPost
-}
+  if (options?.limit) {
+    query = query.limit(options.limit)
+  }
 
-export async function getBlogCategories() {
-  const { data, error } = await supabase.from("blog_categories").select("*").order("name")
+  const { data, error } = await query
 
   if (error) {
-    console.error("Error fetching categories:", error)
+    console.error("Error fetching blog posts by tag:", error)
     return []
   }
 
-  return data as BlogCategory[]
-}
-
-export async function getBlogTags() {
-  const { data, error } = await supabase.from("blog_tags").select("*").order("name")
-
-  if (error) {
-    console.error("Error fetching tags:", error)
-    return []
-  }
-
-  return data as BlogTag[]
+  return data as BlogPost[]
 }
 
 export async function getRelatedPosts(currentPostId: string, categoryId?: string, limit = 3) {

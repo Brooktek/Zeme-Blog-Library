@@ -30,24 +30,18 @@ design_category AS (
 tutorial_category AS (
   SELECT id FROM blog_categories WHERE slug = 'tutorial' LIMIT 1
 )
-INSERT INTO blog_posts (title, slug, excerpt, content, category_id, status, published_at, reading_time, meta_title, meta_description) VALUES
+INSERT INTO blog_posts (
+    title, slug, excerpt, content, category_id, status, published_at, reading_time, meta_title, meta_description
+) VALUES
   (
     'Getting Started with Next.js 15',
     'getting-started-nextjs-15',
     'Learn the fundamentals of Next.js 15 and build your first modern web application.',
-    '# Getting Started with Next.js 15
-
-Next.js 15 brings exciting new features and improvements that make building React applications even more powerful and efficient.
-
-## What''s New in Next.js 15
-
-- **Improved App Router**: Enhanced routing capabilities with better performance
-- **Server Components**: Better server-side rendering and data fetching
-- **Enhanced TypeScript Support**: Improved type safety and developer experience
-
-## Setting Up Your First Project
-
-```bash
-npx create-next-app@latest my-app
-cd my-app
-npm run dev
+    '# Getting Started with Next.js 15\n\nNext.js 15 brings exciting new features and improvements that make building React applications even more powerful and efficient.\n\n## What''s New in Next.js 15\n\n- **Improved App Router**: Enhanced routing capabilities with better performance\n- **Server Components**: Better server-side rendering and data fetching\n- **Enhanced TypeScript Support**: Improved type safety and developer experience\n\n## Setting Up Your First Project\n\n```\nnpx create-next-app@latest my-app\ncd my-app\nnpm run dev\n```',
+    (SELECT id FROM tech_category),
+    'published',
+    NOW(),
+    5,
+    'Getting Started with Next.js 15',
+    'Learn how to get started with Next.js 15, including setup and key features.'
+  );

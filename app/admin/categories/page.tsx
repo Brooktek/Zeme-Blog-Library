@@ -5,7 +5,7 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Plus, Edit, Trash2 } from "lucide-react"
-import { getBlogCategories, type BlogCategory } from "@/lib/blog-api"
+import { getBlogCategories, deleteBlogCategory, type BlogCategory } from "@/lib/blog-api"
 
 export default function AdminCategoriesPage() {
   const [categories, setCategories] = useState<BlogCategory[]>([])
@@ -24,6 +24,18 @@ export default function AdminCategoriesPage() {
       console.error("Error loading categories:", error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleDelete = async (id: string) => {
+    if (window.confirm("Are you sure you want to delete this category?")) {
+      try {
+        await deleteBlogCategory(id)
+        loadCategories() // Refresh the list
+      } catch (error) {
+        console.error("Failed to delete category:", error)
+        // Optionally, show an error message to the user
+      }
     }
   }
 
@@ -71,10 +83,17 @@ export default function AdminCategoriesPage() {
                     {category.description && <p className="text-sm text-muted-foreground">{category.description}</p>}
                   </div>
                   <div className="flex items-center gap-2">
-                    <Button variant="ghost" size="sm">
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive">
+                    <Link href={`/admin/categories/${category.slug}/edit`}>
+                      <Button variant="ghost" size="sm">
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                    </Link>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-destructive hover:text-destructive"
+                      onClick={() => handleDelete(category.id)}
+                    >
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
