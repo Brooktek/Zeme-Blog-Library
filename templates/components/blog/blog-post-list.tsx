@@ -1,14 +1,16 @@
-// Placeholder for Blog Post List component
-import React from 'react';
-import BlogPostCard from './blog-post-card';
+import { BlogPostCard, Post } from '@/components/blog/blog-post-card';
 
-const BlogPostList = () => {
+interface BlogPostListProps {
+  posts: Post[];
+}
+
+export function BlogPostList({ posts }: BlogPostListProps) {
   return (
-    <div className="space-y-4">
-      <BlogPostCard />
-      <BlogPostCard />
+    <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+      {posts.map((post) => (
+        <BlogPostCard key={post.slug} post={post} />
+      ))}
     </div>
   );
-};
+}
 
-export default BlogPostList;

@@ -1,40 +1,57 @@
-// Main export file for the package
-export * from "../components/blog/blog-post-card"
-export * from "../components/blog/blog-post-list"
-export * from "../components/blog/blog-post-detail"
-export * from "../lib/blog-api"
-export * from "../lib/supabase/client"
-export * from "../lib/api-client"
+#!/usr/bin/env node
 
-// Types
-export type {
-  BlogPost,
-  BlogCategory,
-  BlogTag,
-} from "../lib/supabase/client"
+import { Command } from 'commander';
+import { initBlog } from './cli/init';
+import { addComponent } from './cli/add';
+import { installDependencies } from './cli/install';
 
-// Configuration types
-export interface BlogConfig {
-  title: string
-  description: string
-  postsPerPage: number
-  enableComments: boolean
-  enableSearch: boolean
-  enableCategories: boolean
-  enableTags: boolean
-  theme: {
-    primaryColor: string
-    darkMode: boolean
+// A simple helper to get package info (if it exists)
+const getPackageInfo = () => {
+  try {
+    // This needs to be a require statement for the built JS file to find package.json
+    const packageJson = require('../package.json');
+    return { version: packageJson.version };
+  } catch (error) {
+    // Fallback for when the CLI is run in a context where package.json is not available
+    return { version: '1.0.0' };
   }
-  seo: {
-    defaultMetaTitle: string
-    defaultMetaDescription: string
-    twitterHandle: string
-    ogImage: string
-  }
+};
+
+// Gracefully exit on interrupt signals
+process.on('SIGINT', () => process.exit(0));
+process.on('SIGTERM', () => process.exit(0));
+
+async function main() {
+  const packageInfo = getPackageInfo();
+
+  const program = new Command()
+    .name('zeme-blog')
+    .description('A CLI for adding a modular blog system to your Next.js project.')
+    .version(
+      packageInfo.version,
+      '-v, --version',
+      'Display the current version'
+    );
+
+  program
+    .command('init')
+    .description('Initialize the project and create configuration files.')
+    .action(initBlog);
+
+  program
+    .command('add <template-path>')
+    .description('Add a template to your project (e.g., components/blog/blog-post-card).')
+    .option('-f, --force', 'Overwrite existing file if it exists.', false)
+    .action((templatePath: string, options: { force: boolean }) => {
+      addComponent(templatePath, options);
+    });
+
+  program
+    .command('install')
+    .description('Install and check for required peer dependencies.')
+    .action(installDependencies);
+
+  program.parse();
 }
 
-// CLI exports for programmatic usage
-export { installBlog } from "./cli/install"
-export { initBlog } from "./cli/init"
-export { addComponent } from "./cli/add"
+main();

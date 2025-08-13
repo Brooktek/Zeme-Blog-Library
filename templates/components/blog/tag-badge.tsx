@@ -1,12 +1,18 @@
-// Placeholder for Tag Badge component
-import React from 'react';
+import * as React from 'react';
+import Link from 'next/link';
+import { Badge } from '@/components/ui/badge';
 
-const TagBadge = ({ tag }: { tag: { name: string } }) => {
+interface TagBadgeProps {
+  tag: {
+    slug: string;
+    name: string;
+  };
+}
+
+export function TagBadge({ tag }: TagBadgeProps) {
   return (
-    <span className="inline-block bg-gray-100 text-gray-800 text-xs font-semibold mr-2 px-2.5 py-0.5 rounded-full">
-      {tag.name}
-    </span>
+    <Link href={`/blog/tag/${tag.slug}`}>
+      <Badge variant="outline">{tag.name}</Badge>
+    </Link>
   );
-};
-
-export default TagBadge;
+}
