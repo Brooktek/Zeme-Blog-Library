@@ -1,4 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Skeleton } from "@/components/ui/skeleton"
 import type { LucideIcon } from "lucide-react"
 
 interface StatsCardProps {
@@ -12,7 +13,7 @@ interface StatsCardProps {
   }
 }
 
-export function StatsCard({ title, value, description, icon: Icon, trend }: StatsCardProps) {
+const StatsCardComponent = ({ title, value, description, icon: Icon, trend }: StatsCardProps) => {
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -35,3 +36,22 @@ export function StatsCard({ title, value, description, icon: Icon, trend }: Stat
     </Card>
   )
 }
+
+const StatsCardSkeleton = () => {
+  return (
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <Skeleton className="h-4 w-20" />
+        <Skeleton className="h-4 w-4" />
+      </CardHeader>
+      <CardContent>
+        <Skeleton className="h-8 w-12" />
+        <Skeleton className="h-3 w-40 mt-1" />
+      </CardContent>
+    </Card>
+  )
+}
+
+export const StatsCard = Object.assign(StatsCardComponent, {
+  Skeleton: StatsCardSkeleton,
+})

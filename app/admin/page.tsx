@@ -1,24 +1,36 @@
+"use client"
+
+import { useState, useEffect } from "react"
 import { StatsCard } from "@/components/admin/stats-card"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { FileText, FolderOpen, Tags, Eye } from "lucide-react"
-import { supabase } from "@/lib/supabase/client"
+import { FileText, FolderOpen, Tags, Edit } from "lucide-react"
 
-async function getStats() {
-  const [postsResult, categoriesResult, tagsResult] = await Promise.all([
-    supabase.from("blog_posts").select("id, status").eq("status", "published"),
-    supabase.from("blog_categories").select("id"),
-    supabase.from("blog_tags").select("id"),
-  ])
-
-  return {
-    publishedPosts: postsResult.data?.length || 0,
-    totalCategories: categoriesResult.data?.length || 0,
-    totalTags: tagsResult.data?.length || 0,
-  }
+interface Stats {
+  publishedPosts: number
+  totalCategories: number
+  totalTags: number
+  draftPosts: number
 }
 
-export default async function AdminDashboard() {
-  const stats = await getStats()
+export default function AdminDashboard() {
+  const [stats, setStats] = useState<Stats | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    async function fetchStats() {
+      try {
+        const response = await fetch("/api/admin/stats")
+        const { data } = await response.json()
+        setStats(data)
+      } catch (error) {
+        console.error("Failed to fetch stats:", error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchStats()
+  }, [])
 
   return (
     <div className="space-y-8">
@@ -28,20 +40,36 @@ export default async function AdminDashboard() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <StatsCard
-          title="Published Posts"
-          value={stats.publishedPosts}
-          description="Total published blog posts"
-          icon={FileText}
-        />
-        <StatsCard
-          title="Categories"
-          value={stats.totalCategories}
-          description="Total blog categories"
-          icon={FolderOpen}
-        />
-        <StatsCard title="Tags" value={stats.totalTags} description="Total blog tags" icon={Tags} />
-        <StatsCard title="Views" value="N/A" description="Analytics coming soon" icon={Eye} />
+        {loading ? (
+          <>
+            <StatsCard.Skeleton />
+            <StatsCard.Skeleton />
+            <StatsCard.Skeleton />
+            <StatsCard.Skeleton />
+          </>
+        ) : (
+          <>
+            <StatsCard
+              title="Published Posts"
+              value={stats?.publishedPosts ?? 0}
+              description="Total published blog posts"
+              icon={FileText}
+            />
+            <StatsCard
+              title="Draft Posts"
+              value={stats?.draftPosts ?? 0}
+              description="Total draft blog posts"
+              icon={Edit}
+            />
+            <StatsCard
+              title="Categories"
+              value={stats?.totalCategories ?? 0}
+              description="Total blog categories"
+              icon={FolderOpen}
+            />
+            <StatsCard title="Tags" value={stats?.totalTags ?? 0} description="Total blog tags" icon={Tags} />
+          </>
+        )}
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
