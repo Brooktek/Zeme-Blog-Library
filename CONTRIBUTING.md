@@ -35,10 +35,15 @@ cp .env.example .env.local
 # Run the SQL scripts in your Supabase dashboard
 \`\`\`
 
-5. **Start development server:**
-\`\`\`bash
+5. **Build the CLI:**
+```bash
+npm run build:all
+```
+
+6. **Start development server:**
+```bash
 npm run dev
-\`\`\`
+```
 
 ## 📋 Development Guidelines
 
@@ -70,39 +75,7 @@ npm run dev
 - **Indexes**: Add appropriate indexes for performance
 - **Constraints**: Use database constraints for data integrity
 
-## 🧪 Testing
 
-### Running Tests
-
-\`\`\`bash
-# Unit tests
-npm run test
-
-# Integration tests
-npm run test:integration
-
-# E2E tests
-npm run test:e2e
-
-# All tests
-npm run test:all
-\`\`\`
-
-### Writing Tests
-
-- **Unit Tests**: Test individual functions and components
-- **Integration Tests**: Test API endpoints and database operations
-- **E2E Tests**: Test complete user workflows
-
-### Test Structure
-
-\`\`\`typescript
-describe('BlogPostCard', () => {
-  it('should render post title', () => {
-    // Test implementation
-  })
-  
-  it('should handle click events', () => {
     // Test implementation
   })
 })

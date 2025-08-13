@@ -101,7 +101,8 @@ export async function installBlog(options: InstallOptions = {}) {
 }
 
 async function copyComponents(force = false) {
-  const templatesDir = path.join(__dirname, "../../templates")
+    const packageRoot = path.resolve(__dirname, "../..");
+  const templatesDir = path.join(packageRoot, "templates");
   const targetDir = process.cwd()
 
   const componentFiles = [
@@ -128,7 +129,8 @@ async function copyComponents(force = false) {
 }
 
 async function copyApiRoutes(force = false) {
-  const templatesDir = path.join(__dirname, "../../templates")
+    const packageRoot = path.resolve(__dirname, "../..");
+  const templatesDir = path.join(packageRoot, "templates");
   const targetDir = process.cwd()
 
   const apiFiles = [
@@ -157,7 +159,8 @@ async function copyApiRoutes(force = false) {
 }
 
 async function copyAdminComponents(force = false) {
-  const templatesDir = path.join(__dirname, "../../templates")
+    const packageRoot = path.resolve(__dirname, "../..");
+  const templatesDir = path.join(packageRoot, "templates");
   const targetDir = process.cwd()
 
   const adminFiles = [
@@ -193,7 +196,8 @@ async function updateConfigFiles(blogPath: string) {
   await fs.ensureDir(path.dirname(blogSlugPath))
 
   // Copy blog page templates
-  const templatesDir = path.join(__dirname, "../../templates")
+    const packageRoot = path.resolve(__dirname, "../..");
+  const templatesDir = path.join(packageRoot, "templates");
   await fs.copy(path.join(templatesDir, "app/blog/page.tsx"), blogPagePath)
   await fs.copy(path.join(templatesDir, "app/blog/[slug]/page.tsx"), blogSlugPath)
 }
@@ -206,7 +210,8 @@ async function installDependencies() {
 
 async function setupDatabase() {
   // Copy database scripts
-  const templatesDir = path.join(__dirname, "../../templates")
+    const packageRoot = path.resolve(__dirname, "../..");
+  const templatesDir = path.join(packageRoot, "templates");
   const scriptsDir = path.join(process.cwd(), "scripts")
 
   await fs.ensureDir(scriptsDir)
