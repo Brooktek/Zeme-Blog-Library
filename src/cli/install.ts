@@ -13,7 +13,6 @@ interface InstallOptions {
 export async function installBlog(options: InstallOptions = {}) {
   console.log(chalk.blue.bold("🚀 Installing Modular Blog System\n"))
 
-  // Check if we're in a Next.js project
   const packageJsonPath = path.join(process.cwd(), "package.json")
   if (!fs.existsSync(packageJsonPath)) {
     console.error(chalk.red("❌ No package.json found. Please run this command in a Next.js project root."))
@@ -26,7 +25,6 @@ export async function installBlog(options: InstallOptions = {}) {
     process.exit(1)
   }
 
-  // Get installation preferences
   const response = await prompts([
     {
       type: "confirm",
@@ -51,31 +49,25 @@ export async function installBlog(options: InstallOptions = {}) {
   const spinner = ora("Installing blog components...").start()
 
   try {
-    // Copy core components
     await copyComponents(options.force)
     spinner.text = "Components installed..."
 
-    // Copy API routes
     await copyApiRoutes(options.force)
     spinner.text = "API routes installed..."
 
-    // Copy admin dashboard if requested
     if (response.includeAdmin) {
       await copyAdminComponents(options.force)
       spinner.text = "Admin dashboard installed..."
     }
 
-    // Update configuration files
     await updateConfigFiles(response.blogPath)
     spinner.text = "Configuration updated..."
 
-    // Install dependencies
     if (!options.skipDeps) {
       await installDependencies()
       spinner.text = "Dependencies installed..."
     }
 
-    // Set up database if requested
     if (response.setupDatabase) {
       await setupDatabase()
       spinner.text = "Database schema created..."
@@ -83,7 +75,6 @@ export async function installBlog(options: InstallOptions = {}) {
 
     spinner.succeed(chalk.green("✅ Modular Blog System installed successfully!"))
 
-    // Show next steps
     console.log(chalk.blue("\n📋 Next Steps:"))
     console.log(chalk.gray("1. Set up your Supabase project and add environment variables"))
     console.log(chalk.gray("2. Run the database migration scripts"))
@@ -101,7 +92,7 @@ export async function installBlog(options: InstallOptions = {}) {
 }
 
 async function copyComponents(force = false) {
-    const packageRoot = path.resolve(__dirname, "../..");
+    const packageRoot = path.resolve(__dirname, "../../../");
   const templatesDir = path.join(packageRoot, "templates");
   const targetDir = process.cwd()
 
@@ -109,6 +100,8 @@ async function copyComponents(force = false) {
     "components/blog/blog-post-card.tsx",
     "components/blog/blog-post-list.tsx",
     "components/blog/blog-post-detail.tsx",
+    "components/blog/category-badge.tsx",
+    "components/blog/tag-badge.tsx",
     "lib/blog-api.ts",
     "lib/supabase/client.ts",
     "lib/api-client.ts",
@@ -129,7 +122,7 @@ async function copyComponents(force = false) {
 }
 
 async function copyApiRoutes(force = false) {
-    const packageRoot = path.resolve(__dirname, "../..");
+    const packageRoot = path.resolve(__dirname, "../../../");
   const templatesDir = path.join(packageRoot, "templates");
   const targetDir = process.cwd()
 
@@ -159,7 +152,7 @@ async function copyApiRoutes(force = false) {
 }
 
 async function copyAdminComponents(force = false) {
-    const packageRoot = path.resolve(__dirname, "../..");
+    const packageRoot = path.resolve(__dirname, "../../../");
   const templatesDir = path.join(packageRoot, "templates");
   const targetDir = process.cwd()
 
@@ -171,6 +164,8 @@ async function copyAdminComponents(force = false) {
     "app/admin/page.tsx",
     "app/admin/posts/page.tsx",
     "app/admin/posts/new/page.tsx",
+    "app/admin/categories/page.tsx",
+    "app/admin/tags/page.tsx",
   ]
 
   for (const file of adminFiles) {
@@ -188,18 +183,23 @@ async function copyAdminComponents(force = false) {
 }
 
 async function updateConfigFiles(blogPath: string) {
-  // Update or create blog pages
+
   const blogPagePath = path.join(process.cwd(), `app${blogPath}/page.tsx`)
   const blogSlugPath = path.join(process.cwd(), `app${blogPath}/[slug]/page.tsx`)
+  const categoryPagePath = path.join(process.cwd(), `app${blogPath}/category/[slug]/page.tsx`)
+  const tagPagePath = path.join(process.cwd(), `app${blogPath}/tag/[slug]/page.tsx`)
 
   await fs.ensureDir(path.dirname(blogPagePath))
   await fs.ensureDir(path.dirname(blogSlugPath))
+  await fs.ensureDir(path.dirname(categoryPagePath))
+  await fs.ensureDir(path.dirname(tagPagePath))
 
-  // Copy blog page templates
-    const packageRoot = path.resolve(__dirname, "../..");
+    const packageRoot = path.resolve(__dirname, "../../../");
   const templatesDir = path.join(packageRoot, "templates");
   await fs.copy(path.join(templatesDir, "app/blog/page.tsx"), blogPagePath)
   await fs.copy(path.join(templatesDir, "app/blog/[slug]/page.tsx"), blogSlugPath)
+  await fs.copy(path.join(templatesDir, "app/blog/category/[slug]/page.tsx"), categoryPagePath)
+  await fs.copy(path.join(templatesDir, "app/blog/tag/[slug]/page.tsx"), tagPagePath)
 }
 
 async function installDependencies() {
@@ -209,8 +209,7 @@ async function installDependencies() {
 }
 
 async function setupDatabase() {
-  // Copy database scripts
-    const packageRoot = path.resolve(__dirname, "../..");
+    const packageRoot = path.resolve(__dirname, "../../../");
   const templatesDir = path.join(packageRoot, "templates");
   const scriptsDir = path.join(process.cwd(), "scripts")
 

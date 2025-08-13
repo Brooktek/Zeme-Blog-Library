@@ -12,7 +12,6 @@ const ora_1 = __importDefault(require("ora"));
 const prompts_1 = __importDefault(require("prompts"));
 async function installBlog(options = {}) {
     console.log(chalk_1.default.blue.bold("🚀 Installing Modular Blog System\n"));
-    // Check if we're in a Next.js project
     const packageJsonPath = path_1.default.join(process.cwd(), "package.json");
     if (!fs_extra_1.default.existsSync(packageJsonPath)) {
         console.error(chalk_1.default.red("❌ No package.json found. Please run this command in a Next.js project root."));
@@ -23,7 +22,6 @@ async function installBlog(options = {}) {
         console.error(chalk_1.default.red("❌ This doesn't appear to be a Next.js project."));
         process.exit(1);
     }
-    // Get installation preferences
     const response = await (0, prompts_1.default)([
         {
             type: "confirm",
@@ -46,32 +44,25 @@ async function installBlog(options = {}) {
     ]);
     const spinner = (0, ora_1.default)("Installing blog components...").start();
     try {
-        // Copy core components
         await copyComponents(options.force);
         spinner.text = "Components installed...";
-        // Copy API routes
         await copyApiRoutes(options.force);
         spinner.text = "API routes installed...";
-        // Copy admin dashboard if requested
         if (response.includeAdmin) {
             await copyAdminComponents(options.force);
             spinner.text = "Admin dashboard installed...";
         }
-        // Update configuration files
         await updateConfigFiles(response.blogPath);
         spinner.text = "Configuration updated...";
-        // Install dependencies
         if (!options.skipDeps) {
             await installDependencies();
             spinner.text = "Dependencies installed...";
         }
-        // Set up database if requested
         if (response.setupDatabase) {
             await setupDatabase();
             spinner.text = "Database schema created...";
         }
         spinner.succeed(chalk_1.default.green("✅ Modular Blog System installed successfully!"));
-        // Show next steps
         console.log(chalk_1.default.blue("\n📋 Next Steps:"));
         console.log(chalk_1.default.gray("1. Set up your Supabase project and add environment variables"));
         console.log(chalk_1.default.gray("2. Run the database migration scripts"));
@@ -88,13 +79,15 @@ async function installBlog(options = {}) {
     }
 }
 async function copyComponents(force = false) {
-    const packageRoot = path_1.default.resolve(__dirname, "../..");
+    const packageRoot = path_1.default.resolve(__dirname, "../../../");
     const templatesDir = path_1.default.join(packageRoot, "templates");
     const targetDir = process.cwd();
     const componentFiles = [
         "components/blog/blog-post-card.tsx",
         "components/blog/blog-post-list.tsx",
         "components/blog/blog-post-detail.tsx",
+        "components/blog/category-badge.tsx",
+        "components/blog/tag-badge.tsx",
         "lib/blog-api.ts",
         "lib/supabase/client.ts",
         "lib/api-client.ts",
@@ -111,7 +104,7 @@ async function copyComponents(force = false) {
     }
 }
 async function copyApiRoutes(force = false) {
-    const packageRoot = path_1.default.resolve(__dirname, "../..");
+    const packageRoot = path_1.default.resolve(__dirname, "../../../");
     const templatesDir = path_1.default.join(packageRoot, "templates");
     const targetDir = process.cwd();
     const apiFiles = [
@@ -136,7 +129,7 @@ async function copyApiRoutes(force = false) {
     }
 }
 async function copyAdminComponents(force = false) {
-    const packageRoot = path_1.default.resolve(__dirname, "../..");
+    const packageRoot = path_1.default.resolve(__dirname, "../../../");
     const templatesDir = path_1.default.join(packageRoot, "templates");
     const targetDir = process.cwd();
     const adminFiles = [
@@ -147,6 +140,8 @@ async function copyAdminComponents(force = false) {
         "app/admin/page.tsx",
         "app/admin/posts/page.tsx",
         "app/admin/posts/new/page.tsx",
+        "app/admin/categories/page.tsx",
+        "app/admin/tags/page.tsx",
     ];
     for (const file of adminFiles) {
         const sourcePath = path_1.default.join(templatesDir, file);
@@ -160,24 +155,27 @@ async function copyAdminComponents(force = false) {
     }
 }
 async function updateConfigFiles(blogPath) {
-    // Update or create blog pages
     const blogPagePath = path_1.default.join(process.cwd(), `app${blogPath}/page.tsx`);
     const blogSlugPath = path_1.default.join(process.cwd(), `app${blogPath}/[slug]/page.tsx`);
+    const categoryPagePath = path_1.default.join(process.cwd(), `app${blogPath}/category/[slug]/page.tsx`);
+    const tagPagePath = path_1.default.join(process.cwd(), `app${blogPath}/tag/[slug]/page.tsx`);
     await fs_extra_1.default.ensureDir(path_1.default.dirname(blogPagePath));
     await fs_extra_1.default.ensureDir(path_1.default.dirname(blogSlugPath));
-    // Copy blog page templates
-    const packageRoot = path_1.default.resolve(__dirname, "../..");
+    await fs_extra_1.default.ensureDir(path_1.default.dirname(categoryPagePath));
+    await fs_extra_1.default.ensureDir(path_1.default.dirname(tagPagePath));
+    const packageRoot = path_1.default.resolve(__dirname, "../../../");
     const templatesDir = path_1.default.join(packageRoot, "templates");
     await fs_extra_1.default.copy(path_1.default.join(templatesDir, "app/blog/page.tsx"), blogPagePath);
     await fs_extra_1.default.copy(path_1.default.join(templatesDir, "app/blog/[slug]/page.tsx"), blogSlugPath);
+    await fs_extra_1.default.copy(path_1.default.join(templatesDir, "app/blog/category/[slug]/page.tsx"), categoryPagePath);
+    await fs_extra_1.default.copy(path_1.default.join(templatesDir, "app/blog/tag/[slug]/page.tsx"), tagPagePath);
 }
 async function installDependencies() {
     const dependencies = ["@supabase/supabase-js", "lucide-react"];
     (0, child_process_1.execSync)(`npm install ${dependencies.join(" ")}`, { stdio: "inherit" });
 }
 async function setupDatabase() {
-    // Copy database scripts
-    const packageRoot = path_1.default.resolve(__dirname, "../..");
+    const packageRoot = path_1.default.resolve(__dirname, "../../../");
     const templatesDir = path_1.default.join(packageRoot, "templates");
     const scriptsDir = path_1.default.join(process.cwd(), "scripts");
     await fs_extra_1.default.ensureDir(scriptsDir);
