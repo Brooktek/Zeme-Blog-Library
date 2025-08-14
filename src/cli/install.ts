@@ -81,25 +81,22 @@ async function updateEnvFile(vars: { supabaseUrl: string; supabaseAnonKey: strin
 
 async function copyTemplateFiles() {
   const spinner = ora('Copying template files...').start();
-  const sourceDir = path.resolve(__dirname, '..', '..', 'templates');
   const targetDir = process.cwd();
-  const directoriesToCopy = ['app', 'components', 'lib'];
 
   try {
-    for (const dir of directoriesToCopy) {
-      const sourcePath = path.join(sourceDir, dir);
-      const targetPath = path.join(targetDir, dir);
-      if (await fs.pathExists(sourcePath)) {
-        await fs.ensureDir(targetPath);
-        await fs.copy(sourcePath, targetPath, { overwrite: true });
-      }
+    // Use __dirname to reliably find the templates directory relative to the compiled script
+    const sourceDir = path.join(__dirname, '..', '..', 'templates');
+
+    if (!await fs.pathExists(sourceDir)) {
+      throw new Error(`Templates directory not found at ${sourceDir}`);
     }
 
-    // Copy the schema file separately to the project root
-    const schemaSource = path.join(sourceDir, 'scripts', 'schema.sql');
-    const schemaTarget = path.join(targetDir, 'schema.sql');
-    if (await fs.pathExists(schemaSource)) {
-        await fs.copy(schemaSource, schemaTarget, { overwrite: true });
+    // Read all items in the source directory and copy them to the target directory
+    const items = await fs.readdir(sourceDir);
+    for (const item of items) {
+      const sourcePath = path.join(sourceDir, item);
+      const destinationPath = path.join(targetDir, item);
+      await fs.copy(sourcePath, destinationPath, { overwrite: true });
     }
 
     spinner.succeed(chalk.green('Successfully copied all blog files.'));

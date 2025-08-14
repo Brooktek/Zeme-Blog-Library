@@ -80,23 +80,19 @@ async function updateEnvFile(vars) {
 }
 async function copyTemplateFiles() {
     const spinner = (0, ora_1.default)('Copying template files...').start();
-    const sourceDir = path_1.default.resolve(__dirname, '..', '..', 'templates');
     const targetDir = process.cwd();
-    const directoriesToCopy = ['app', 'components', 'lib'];
     try {
-        for (const dir of directoriesToCopy) {
-            const sourcePath = path_1.default.join(sourceDir, dir);
-            const targetPath = path_1.default.join(targetDir, dir);
-            if (await fs_extra_1.default.pathExists(sourcePath)) {
-                await fs_extra_1.default.ensureDir(targetPath);
-                await fs_extra_1.default.copy(sourcePath, targetPath, { overwrite: true });
-            }
+        // Use __dirname to reliably find the templates directory relative to the compiled script
+        const sourceDir = path_1.default.join(__dirname, '..', '..', 'templates');
+        if (!await fs_extra_1.default.pathExists(sourceDir)) {
+            throw new Error(`Templates directory not found at ${sourceDir}`);
         }
-        // Copy the schema file separately to the project root
-        const schemaSource = path_1.default.join(sourceDir, 'scripts', 'schema.sql');
-        const schemaTarget = path_1.default.join(targetDir, 'schema.sql');
-        if (await fs_extra_1.default.pathExists(schemaSource)) {
-            await fs_extra_1.default.copy(schemaSource, schemaTarget, { overwrite: true });
+        // Read all items in the source directory and copy them to the target directory
+        const items = await fs_extra_1.default.readdir(sourceDir);
+        for (const item of items) {
+            const sourcePath = path_1.default.join(sourceDir, item);
+            const destinationPath = path_1.default.join(targetDir, item);
+            await fs_extra_1.default.copy(sourcePath, destinationPath, { overwrite: true });
         }
         spinner.succeed(chalk_1.default.green('Successfully copied all blog files.'));
     }

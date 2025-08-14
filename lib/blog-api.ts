@@ -1,6 +1,8 @@
 import { supabase, type BlogPost, type BlogCategory, type BlogTag } from "./supabase/client"
 
-export async function getBlogPosts(options: { category?: string; limit?: number } = {}) {
+export async function getBlogPosts(
+  options: { category?: string; limit?: number; status?: string } = {},
+) {
   let query = supabase.from("blog_posts").select(`
     *,
     blog_categories (*),
@@ -24,6 +26,10 @@ export async function getBlogPosts(options: { category?: string; limit?: number 
     } else {
       return []
     }
+  }
+
+  if (options.status && options.status !== "all") {
+    query = query.eq("status", options.status)
   }
 
   if (options.limit) {

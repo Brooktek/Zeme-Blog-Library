@@ -2,6 +2,7 @@ import { type BlogPost, type BlogCategory, type BlogTag } from "./supabase/clien
 export declare function getBlogPosts(options?: {
     category?: string;
     limit?: number;
+    status?: string;
 }): Promise<BlogPost[]>;
 export declare function getBlogPost(slug: string): Promise<BlogPost | null>;
 export declare function getBlogCategories(): Promise<BlogCategory[]>;

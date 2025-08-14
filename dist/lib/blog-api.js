@@ -39,6 +39,9 @@ async function getBlogPosts(options = {}) {
             return [];
         }
     }
+    if (options.status && options.status !== "all") {
+        query = query.eq("status", options.status);
+    }
     if (options.limit) {
         query = query.limit(options.limit);
     }
