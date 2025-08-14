@@ -27,10 +27,11 @@ export async function GET(
     }
 
     return NextResponse.json(post);
-  } catch (error: any) {
-    console.error(`Error fetching post with slug ${slug}:`, error);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'An unknown error occurred';
+    console.error(`Error fetching post with slug ${slug}:`, message);
     return NextResponse.json(
-      { message: 'Error fetching post', error: error.message },
+      { message: 'Error fetching post', error: message },
       { status: 500 }
     );
   }

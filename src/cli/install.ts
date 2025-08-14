@@ -7,6 +7,7 @@ import { exec } from 'child_process';
 
 const PEER_DEPENDENCIES = [
   '@supabase/supabase-js',
+  '@supabase/ssr',
   'lucide-react',
   'class-variance-authority',
   'clsx',
@@ -76,25 +77,44 @@ async function updateEnvFile(vars: { supabaseUrl: string; supabaseAnonKey: strin
 
 async function copyTemplateFiles() {
   const spinner = ora('Copying template files...').start();
+  const sourceDir = path.join(__dirname, '..', '..', '..', 'templates');
   const targetDir = process.cwd();
+  const skippedFiles: string[] = [];
 
   try {
-    // Use __dirname to reliably find the templates directory relative to the compiled script
-    const sourceDir = path.join(__dirname, '..', '..', '..', 'templates');
-
     if (!await fs.pathExists(sourceDir)) {
       throw new Error(`Templates directory not found at ${sourceDir}`);
     }
 
-    // Read all items in the source directory and copy them to the target directory
-    const items = await fs.readdir(sourceDir);
-    for (const item of items) {
-      const sourcePath = path.join(sourceDir, item);
-      const destinationPath = path.join(targetDir, item);
-      await fs.copy(sourcePath, destinationPath, { overwrite: true });
-    }
+    const copyRecursively = async (src: string, dest: string) => {
+      const entries = await fs.readdir(src, { withFileTypes: true });
+      await fs.mkdir(dest, { recursive: true });
 
-    spinner.succeed(chalk.green('Successfully copied all blog files.'));
+      for (const entry of entries) {
+        const srcPath = path.join(src, entry.name);
+        const destPath = path.join(dest, entry.name);
+
+        if (entry.isDirectory()) {
+          await copyRecursively(srcPath, destPath);
+        } else {
+          if (await fs.pathExists(destPath)) {
+            skippedFiles.push(path.relative(targetDir, destPath));
+          } else {
+            await fs.copy(srcPath, destPath);
+          }
+        }
+      }
+    };
+
+    await copyRecursively(sourceDir, targetDir);
+
+    if (skippedFiles.length > 0) {
+      spinner.warn(chalk.yellow('Some files already existed and were skipped.'));
+      console.log(chalk.gray('The following files were not overwritten:'));
+      skippedFiles.forEach(file => console.log(chalk.gray(`  - ${file.replace(/\\/g, '/')}`)));
+    } else {
+      spinner.succeed(chalk.green('Successfully copied all blog files.'));
+    }
   } catch (error) {
     spinner.fail(chalk.red('Failed to copy template files.'));
     console.error(error);

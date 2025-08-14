@@ -15,8 +15,13 @@ export async function GET(request: Request, { params }: { params: { id: string }
     if (!data) return new NextResponse('Tag not found', { status: 404 });
 
     return NextResponse.json(data);
-  } catch (error: any) {
-    return NextResponse.json({ message: 'Error fetching tag', error: error.message }, { status: 500 });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'An unknown error occurred';
+    console.error(`Error fetching tag ${params.id}:`, message);
+    return NextResponse.json(
+      { message: 'Error fetching tag', error: message },
+      { status: 500 }
+    );
   }
 }
 
@@ -38,8 +43,13 @@ export async function PUT(request: Request, { params }: { params: { id: string }
     }
 
     return NextResponse.json({ message: 'Tag updated successfully' });
-  } catch (error: any) {
-    return NextResponse.json({ message: 'Error updating tag', error: error.message }, { status: 500 });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'An unknown error occurred';
+    console.error('Error updating tag:', message);
+    return NextResponse.json(
+      { message: 'Error updating tag', error: message },
+      { status: 500 }
+    );
   }
 }
 
@@ -55,7 +65,12 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
     if (error) throw error;
 
     return new NextResponse(null, { status: 204 }); // No Content
-  } catch (error: any) {
-    return NextResponse.json({ message: 'Error deleting tag', error: error.message }, { status: 500 });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'An unknown error occurred';
+    console.error(`Error deleting tag ${params.id}:`, message);
+    return NextResponse.json(
+      { message: 'Error deleting tag', error: message },
+      { status: 500 }
+    );
   }
 }

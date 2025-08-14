@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server';
-import { NextResponse } from 'next/server';
+import { NextResponse, type NextRequest } from 'next/server';
 
 export async function GET(request: Request) {
   const supabase = createClient();
@@ -8,7 +8,8 @@ export async function GET(request: Request) {
     // For the admin panel, we fetch all posts, not just 'published' ones
     const { data: posts, error } = await supabase
       .from('posts')
-      .select(`
+      .select(
+        `
         id,
         title,
         slug,
@@ -16,7 +17,8 @@ export async function GET(request: Request) {
         created_at,
         categories ( name ),
         tags ( name )
-      `)
+      `
+      )
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -24,16 +26,17 @@ export async function GET(request: Request) {
     }
 
     return NextResponse.json(posts);
-  } catch (error: any) {
-    console.error('Error fetching posts for admin:', error);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'An unknown error occurred';
+    console.error('Error fetching posts:', message);
     return NextResponse.json(
-      { message: 'Error fetching posts for admin', error: error.message },
+      { message: 'Error fetching posts', error: message },
       { status: 500 }
     );
   }
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   const supabase = createClient();
   try {
     const { title, content, slug, category_id, status, tag_ids } = await request.json();
@@ -53,7 +56,8 @@ export async function POST(request: Request) {
 
     if (postError) {
       // Handle potential duplicate slug error
-      if (postError.code === '23505') { // unique_violation
+      if (postError.code === '23505') {
+        // unique_violation
         return NextResponse.json({ message: 'A post with this slug already exists.' }, { status: 409 });
       }
       throw postError;
@@ -81,12 +85,14 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json(post, { status: 201 });
-  } catch (error: any) {
-    console.error('Error creating post:', error);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'An unknown error occurred';
+    console.error('Error creating post:', message);
     return NextResponse.json(
-      { message: 'Error creating post', error: error.message },
+      { message: 'Error creating post', error: message },
       { status: 500 }
     );
   }
+}
 }
 

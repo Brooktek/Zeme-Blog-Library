@@ -12,6 +12,7 @@ const prompts_1 = __importDefault(require("prompts"));
 const child_process_1 = require("child_process");
 const PEER_DEPENDENCIES = [
     '@supabase/supabase-js',
+    '@supabase/ssr',
     'lucide-react',
     'class-variance-authority',
     'clsx',
@@ -75,21 +76,41 @@ async function updateEnvFile(vars) {
 }
 async function copyTemplateFiles() {
     const spinner = (0, ora_1.default)('Copying template files...').start();
+    const sourceDir = path_1.default.join(__dirname, '..', '..', '..', 'templates');
     const targetDir = process.cwd();
+    const skippedFiles = [];
     try {
-        // Use __dirname to reliably find the templates directory relative to the compiled script
-        const sourceDir = path_1.default.join(__dirname, '..', '..', '..', 'templates');
         if (!await fs_extra_1.default.pathExists(sourceDir)) {
             throw new Error(`Templates directory not found at ${sourceDir}`);
         }
-        // Read all items in the source directory and copy them to the target directory
-        const items = await fs_extra_1.default.readdir(sourceDir);
-        for (const item of items) {
-            const sourcePath = path_1.default.join(sourceDir, item);
-            const destinationPath = path_1.default.join(targetDir, item);
-            await fs_extra_1.default.copy(sourcePath, destinationPath, { overwrite: true });
+        const copyRecursively = async (src, dest) => {
+            const entries = await fs_extra_1.default.readdir(src, { withFileTypes: true });
+            await fs_extra_1.default.mkdir(dest, { recursive: true });
+            for (const entry of entries) {
+                const srcPath = path_1.default.join(src, entry.name);
+                const destPath = path_1.default.join(dest, entry.name);
+                if (entry.isDirectory()) {
+                    await copyRecursively(srcPath, destPath);
+                }
+                else {
+                    if (await fs_extra_1.default.pathExists(destPath)) {
+                        skippedFiles.push(path_1.default.relative(targetDir, destPath));
+                    }
+                    else {
+                        await fs_extra_1.default.copy(srcPath, destPath);
+                    }
+                }
+            }
+        };
+        await copyRecursively(sourceDir, targetDir);
+        if (skippedFiles.length > 0) {
+            spinner.warn(chalk_1.default.yellow('Some files already existed and were skipped.'));
+            console.log(chalk_1.default.gray('The following files were not overwritten:'));
+            skippedFiles.forEach(file => console.log(chalk_1.default.gray(`  - ${file.replace(/\\/g, '/')}`)));
         }
-        spinner.succeed(chalk_1.default.green('Successfully copied all blog files.'));
+        else {
+            spinner.succeed(chalk_1.default.green('Successfully copied all blog files.'));
+        }
     }
     catch (error) {
         spinner.fail(chalk_1.default.red('Failed to copy template files.'));

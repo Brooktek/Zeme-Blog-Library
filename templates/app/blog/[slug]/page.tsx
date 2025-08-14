@@ -52,14 +52,3 @@ export default async function PostPage({ params }: { params: { slug: string } })
 
   return <BlogPostDetail post={post} />;
 }
-
-
-const SinglePostPage = ({ params }: { params: { slug: string } }) => {
-  return (
-    <div className="container mx-auto p-4">
-      <BlogPostDetail />
-    </div>
-  );
-};
-
-export default SinglePostPage;

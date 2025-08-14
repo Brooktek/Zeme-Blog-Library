@@ -28,17 +28,12 @@ export async function GET() {
       categories: categoriesCount ?? 0,
       tags: tagsCount ?? 0,
     });
-  } catch (error: any) {
-    console.error('Error fetching admin stats:', error);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'An unknown error occurred';
+    console.error('Error fetching admin stats:', message);
     return NextResponse.json(
-      { message: 'Error fetching admin stats', error: error.message },
+      { message: 'Error fetching admin stats', error: message },
       { status: 500 }
     );
   }
-}
-
-import { NextResponse } from 'next/server';
-
-export async function GET() {
-  return NextResponse.json({ posts: 0, categories: 0, tags: 0 });
 }

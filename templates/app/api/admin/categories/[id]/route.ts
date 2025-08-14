@@ -15,8 +15,13 @@ export async function GET(request: Request, { params }: { params: { id: string }
     if (!data) return new NextResponse('Category not found', { status: 404 });
 
     return NextResponse.json(data);
-  } catch (error: any) {
-    return NextResponse.json({ message: 'Error fetching category', error: error.message }, { status: 500 });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'An unknown error occurred';
+    console.error(`Error fetching category ${params.id}:`, message);
+    return NextResponse.json(
+      { message: 'Error fetching category', error: message },
+      { status: 500 }
+    );
   }
 }
 
@@ -38,8 +43,13 @@ export async function PUT(request: Request, { params }: { params: { id: string }
     }
 
     return NextResponse.json({ message: 'Category updated successfully' });
-  } catch (error: any) {
-    return NextResponse.json({ message: 'Error updating category', error: error.message }, { status: 500 });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'An unknown error occurred';
+    console.error('Error updating category:', message);
+    return NextResponse.json(
+      { message: 'Error updating category', error: message },
+      { status: 500 }
+    );
   }
 }
 
@@ -52,7 +62,12 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
     if (error) throw error;
 
     return new NextResponse(null, { status: 204 }); // No Content
-  } catch (error: any) {
-    return NextResponse.json({ message: 'Error deleting category', error: error.message }, { status: 500 });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'An unknown error occurred';
+    console.error(`Error deleting category ${params.id}:`, message);
+    return NextResponse.json(
+      { message: 'Error deleting category', error: message },
+      { status: 500 }
+    );
   }
 }

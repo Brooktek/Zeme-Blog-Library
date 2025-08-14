@@ -59,10 +59,11 @@ export async function GET(request: Request) {
       page,
       limit,
     });
-  } catch (error: any) {
-    console.error('Error fetching posts:', error);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'An unknown error occurred';
+    console.error('Error fetching posts:', message);
     return NextResponse.json(
-      { message: 'Error fetching posts', error: error.message },
+      { message: 'Error fetching posts', error: message },
       { status: 500 }
     );
   }

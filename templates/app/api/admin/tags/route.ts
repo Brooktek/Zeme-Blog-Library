@@ -12,9 +12,11 @@ export async function GET() {
     if (error) throw error;
 
     return NextResponse.json(data);
-  } catch (error: any) {
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'An unknown error occurred';
+    console.error('Error fetching tags:', message);
     return NextResponse.json(
-      { message: 'Error fetching tags', error: error.message },
+      { message: 'Error fetching tags', error: message },
       { status: 500 }
     );
   }
@@ -39,9 +41,11 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json(data, { status: 201 });
-  } catch (error: any) {
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'An unknown error occurred';
+    console.error('Error creating tag:', message);
     return NextResponse.json(
-      { message: 'Error creating tag', error: error.message },
+      { message: 'Error creating tag', error: message },
       { status: 500 }
     );
   }
