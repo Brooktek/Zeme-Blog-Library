@@ -54,22 +54,17 @@ async function runPrompts() {
       name: 'supabaseAnonKey',
       message: 'Enter your Supabase anon key:',
     },
-    {
-        type: 'password',
-        name: 'supabaseServiceKey',
-        message: 'Enter your Supabase service_role key:',
-    }
   ]);
   return responses;
 }
 
-async function updateEnvFile(vars: { supabaseUrl: string; supabaseAnonKey: string; supabaseServiceKey: string }) {
+async function updateEnvFile(vars: { supabaseUrl: string; supabaseAnonKey: string; }) {
   const spinner = ora('Updating .env.local...').start();
   const envPath = path.join(process.cwd(), '.env.local');
   try {
     let envContent = (await fs.pathExists(envPath)) ? await fs.readFile(envPath, 'utf-8') : '';
     if (!envContent.endsWith('\n') && envContent) envContent += '\n';
-    envContent += `\n# Zeme Blog Configuration\nNEXT_PUBLIC_SUPABASE_URL=${vars.supabaseUrl}\nNEXT_PUBLIC_SUPABASE_ANON_KEY=${vars.supabaseAnonKey}\nSUPABASE_SERVICE_ROLE_KEY=${vars.supabaseServiceKey}\n`;
+    envContent += `\n# Zeme Blog Configuration\nNEXT_PUBLIC_SUPABASE_URL=${vars.supabaseUrl}\nNEXT_PUBLIC_SUPABASE_ANON_KEY=${vars.supabaseAnonKey}\n`;
     await fs.writeFile(envPath, envContent);
     spinner.succeed(chalk.green('Successfully updated .env.local'));
   } catch (error) {
@@ -85,7 +80,7 @@ async function copyTemplateFiles() {
 
   try {
     // Use __dirname to reliably find the templates directory relative to the compiled script
-    const sourceDir = path.join(__dirname, '..', '..', 'templates');
+    const sourceDir = path.join(__dirname, '..', '..', '..', 'templates');
 
     if (!await fs.pathExists(sourceDir)) {
       throw new Error(`Templates directory not found at ${sourceDir}`);
@@ -147,14 +142,15 @@ async function installDependencies() {
 
 export async function installBlog() {
   try {
+    await copyTemplateFiles();
+
     const config = await runPrompts();
     if (!config.supabaseUrl || !config.supabaseAnonKey) {
-        console.log(chalk.yellow('\n\nAborted installation.'));
-        return;
+      console.log(chalk.yellow('\n\nAborted installation.'));
+      return;
     }
 
     await updateEnvFile(config as any);
-    await copyTemplateFiles();
     await installDependencies();
 
     console.log(chalk.green.bold("\n✅ Zeme Blog has been installed successfully!"));
