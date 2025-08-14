@@ -1,1 +1,1 @@
-export declare function installDependencies(): Promise<void>;
+export declare function installBlog(): Promise<void>;

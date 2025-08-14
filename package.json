@@ -1,11 +1,11 @@
 {
   "name": "zeme-blog-system",
-  "version": "0.2.2",
+  "version": "0.2.4",
   "bin": "./bin/cli.js",
   "files": [
     "dist",
     "bin",
-    "templates",
+    "templates/**/*",
     "components.json"
   ],
   "scripts": {

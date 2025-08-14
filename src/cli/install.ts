@@ -2,101 +2,173 @@ import fs from 'fs-extra';
 import path from 'path';
 import chalk from 'chalk';
 import ora from 'ora';
+import prompts from 'prompts';
 import { exec } from 'child_process';
 
-// Define the peer dependencies that may be required by the components.
-// This list can be expanded as more components with specific dependencies are added.
 const PEER_DEPENDENCIES = [
   '@supabase/supabase-js',
-  'lucide-react', // Commonly used for icons in shadcn/ui
+  'lucide-react',
   'class-variance-authority',
   'clsx',
   'tailwind-merge',
+  'react-hook-form',
+  '@hookform/resolvers',
+  'zod',
 ];
+
+// --- Utility Functions ---
+
+const isValidSupabaseUrl = (url: string) => /https?:\/\/.+\.supabase\.co/i.test(url);
 
 type PackageManager = 'npm' | 'yarn' | 'pnpm';
 
-// Function to detect the package manager by checking for lock files.
 async function detectPackageManager(): Promise<PackageManager> {
   const cwd = process.cwd();
-  if (await fs.pathExists(path.join(cwd, 'pnpm-lock.yaml'))) {
-    return 'pnpm';
-  }
-  if (await fs.pathExists(path.join(cwd, 'yarn.lock'))) {
-    return 'yarn';
-  }
+  if (await fs.pathExists(path.join(cwd, 'pnpm-lock.yaml'))) return 'pnpm';
+  if (await fs.pathExists(path.join(cwd, 'yarn.lock'))) return 'yarn';
   return 'npm';
 }
 
-// Function to get the correct install command for the detected package manager.
 function getInstallCommand(manager: PackageManager, packages: string[]): string {
   const packageList = packages.join(' ');
   switch (manager) {
-    case 'yarn':
-      return `yarn add ${packageList}`;
-    case 'pnpm':
-      return `pnpm add ${packageList}`;
-    case 'npm':
-    default:
-      return `npm install ${packageList}`;
+    case 'yarn': return `yarn add ${packageList}`;
+    case 'pnpm': return `pnpm add ${packageList}`;
+    default: return `npm install ${packageList}`;
   }
 }
 
-export async function installDependencies() {
-  console.log(chalk.blue.bold('\n📦 Checking and installing peer dependencies...'));
+// --- Core Logic ---
 
-  const spinner = ora('Reading project configuration...').start();
-  let missingDependencies: string[] = [];
+async function runPrompts() {
+  console.log(chalk.blue.bold("\n🔧 Let's configure your Zeme Blog..."));
+  const responses = await prompts([
+    {
+      type: 'text',
+      name: 'supabaseUrl',
+      message: 'Enter your Supabase project URL:',
+      validate: (url) => isValidSupabaseUrl(url) || 'Please enter a valid Supabase URL.',
+    },
+    {
+      type: 'password',
+      name: 'supabaseAnonKey',
+      message: 'Enter your Supabase anon key:',
+    },
+    {
+        type: 'password',
+        name: 'supabaseServiceKey',
+        message: 'Enter your Supabase service_role key:',
+    }
+  ]);
+  return responses;
+}
+
+async function updateEnvFile(vars: { supabaseUrl: string; supabaseAnonKey: string; supabaseServiceKey: string }) {
+  const spinner = ora('Updating .env.local...').start();
+  const envPath = path.join(process.cwd(), '.env.local');
+  try {
+    let envContent = (await fs.pathExists(envPath)) ? await fs.readFile(envPath, 'utf-8') : '';
+    if (!envContent.endsWith('\n') && envContent) envContent += '\n';
+    envContent += `\n# Zeme Blog Configuration\nNEXT_PUBLIC_SUPABASE_URL=${vars.supabaseUrl}\nNEXT_PUBLIC_SUPABASE_ANON_KEY=${vars.supabaseAnonKey}\nSUPABASE_SERVICE_ROLE_KEY=${vars.supabaseServiceKey}\n`;
+    await fs.writeFile(envPath, envContent);
+    spinner.succeed(chalk.green('Successfully updated .env.local'));
+  } catch (error) {
+    spinner.fail(chalk.red('Failed to update .env.local'));
+    console.error(error);
+    process.exit(1);
+  }
+}
+
+async function copyTemplateFiles() {
+  const spinner = ora('Copying template files...').start();
+  const sourceDir = path.resolve(__dirname, '..', '..', 'templates');
+  const targetDir = process.cwd();
+  const directoriesToCopy = ['app', 'components', 'lib'];
 
   try {
-    // 1. Read the user's package.json to find installed packages.
+    for (const dir of directoriesToCopy) {
+      const sourcePath = path.join(sourceDir, dir);
+      const targetPath = path.join(targetDir, dir);
+      if (await fs.pathExists(sourcePath)) {
+        await fs.ensureDir(targetPath);
+        await fs.copy(sourcePath, targetPath, { overwrite: true });
+      }
+    }
+
+    // Copy the schema file separately to the project root
+    const schemaSource = path.join(sourceDir, 'scripts', 'schema.sql');
+    const schemaTarget = path.join(targetDir, 'schema.sql');
+    if (await fs.pathExists(schemaSource)) {
+        await fs.copy(schemaSource, schemaTarget, { overwrite: true });
+    }
+
+    spinner.succeed(chalk.green('Successfully copied all blog files.'));
+  } catch (error) {
+    spinner.fail(chalk.red('Failed to copy template files.'));
+    console.error(error);
+    process.exit(1);
+  }
+}
+
+async function installDependencies() {
+  const spinner = ora('Installing dependencies...').start();
+  try {
     const packageJsonPath = path.join(process.cwd(), 'package.json');
     if (!await fs.pathExists(packageJsonPath)) {
-      spinner.fail(chalk.red('`package.json` not found. Please run this in a valid project directory.'));
+      spinner.fail(chalk.red('`package.json` not found.'));
       process.exit(1);
     }
     const packageJson = await fs.readJson(packageJsonPath);
-    const installedDependencies = new Set([
-      ...Object.keys(packageJson.dependencies || {}),
-      ...Object.keys(packageJson.devDependencies || {}),
-    ]);
+    const installed = new Set([...Object.keys(packageJson.dependencies || {}), ...Object.keys(packageJson.devDependencies || {})]);
+    const missing = PEER_DEPENDENCIES.filter((dep) => !installed.has(dep));
 
-    // 2. Determine which dependencies are missing.
-    missingDependencies = PEER_DEPENDENCIES.filter(
-      (dep) => !installedDependencies.has(dep)
-    );
-
-    if (missingDependencies.length === 0) {
-      spinner.succeed(chalk.green('✅ All peer dependencies are already installed.'));
+    if (missing.length === 0) {
+      spinner.succeed(chalk.green('All dependencies are already installed.'));
       return;
     }
 
-    spinner.text = 'Installing missing dependencies...';
-
-    // 3. Detect the package manager and run the install command.
-    const packageManager = await detectPackageManager();
-    const installCommand = getInstallCommand(packageManager, missingDependencies);
-
-    spinner.info(`Detected ${chalk.cyan(packageManager)}. Running command: ${chalk.gray(installCommand)}`);
+    const manager = await detectPackageManager();
+    const command = getInstallCommand(manager, missing);
+    spinner.info(`Detected ${chalk.cyan(manager)}. Running: ${chalk.gray(command)}`);
 
     await new Promise<void>((resolve, reject) => {
-      exec(installCommand, (error, stdout, stderr) => {
-        if (error) {
-          reject(new Error(stderr));
-        } else {
+      exec(command, (error, stdout, stderr) => {
+        if (error) reject(new Error(stderr));
+        else {
           console.log(`\n${stdout}`);
           resolve();
         }
       });
     });
-
-    spinner.succeed(chalk.green('✅ Successfully installed required dependencies!'));
-
-  } catch (error: any) {
+    spinner.succeed(chalk.green('Successfully installed dependencies!'));
+  } catch (error) {
     spinner.fail(chalk.red('Failed to install dependencies.'));
-    console.error(error.message);
-    console.log(chalk.yellow('\nPlease try installing the following packages manually:'));
-    console.log(chalk.gray(missingDependencies.join(' ')));
+    console.error(error);
+    process.exit(1);
+  }
+}
+
+export async function installBlog() {
+  try {
+    const config = await runPrompts();
+    if (!config.supabaseUrl || !config.supabaseAnonKey) {
+        console.log(chalk.yellow('\n\nAborted installation.'));
+        return;
+    }
+
+    await updateEnvFile(config as any);
+    await copyTemplateFiles();
+    await installDependencies();
+
+    console.log(chalk.green.bold("\n✅ Zeme Blog has been installed successfully!"));
+    console.log(chalk.blue("\nNext Steps:"));
+    console.log(chalk.gray("1. Go to your Supabase dashboard's SQL Editor."));
+    console.log(chalk.gray("2. Copy the content from `templates/scripts/schema.sql` and run it to set up your database tables."));
+    console.log(chalk.gray("3. Start your development server (`npm run dev`) and navigate to `/admin` to get started."));
+
+  } catch (error) {
+    console.error(chalk.red('\nAn unexpected error occurred during installation.'));
+    console.error(error);
     process.exit(1);
   }
 }
