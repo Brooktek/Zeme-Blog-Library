@@ -1,9 +1,9 @@
-import { createClient } from '@/lib/supabase/server';
+import { createSupabaseServerClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
 
 // GET a single post by ID
 export async function GET(request: Request, { params }: { params: { id: string } }) {
-  const supabase = createClient();
+  const supabase = await createSupabaseServerClient();
   try {
     const { data, error } = await supabase
       .from('posts')
@@ -31,19 +31,36 @@ export async function GET(request: Request, { params }: { params: { id: string }
 
 // UPDATE a post
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
-  const supabase = createClient();
+  const supabase = await createSupabaseServerClient();
   try {
     const { title, content, slug, category_id, status, tag_ids } = await request.json();
 
-    // 1. Update the post details
+    // 1. Update the post details (excluding category_id)
     const { error: postError } = await supabase
       .from('posts')
-      .update({ title, content, slug, category_id, status })
+      .update({ title, content, slug, status })
       .eq('id', params.id);
 
     if (postError) throw postError;
 
-    // 2. Update tags (this is a multi-step process)
+    // 2. Update the category link in the junction table
+    // First, remove existing category associations for this post
+    const { error: deleteCategoryError } = await supabase
+      .from('post_categories')
+      .delete()
+      .eq('post_id', params.id);
+
+    if (deleteCategoryError) throw deleteCategoryError;
+
+    // Then, add the new category association if a category_id is provided
+    if (category_id) {
+      const { error: insertCategoryError } = await supabase
+        .from('post_categories')
+        .insert({ post_id: parseInt(params.id), category_id: category_id });
+      if (insertCategoryError) throw insertCategoryError;
+    }
+
+    // 3. Update tags (this is a multi-step process)
     // First, remove all existing tag associations for this post
     const { error: deleteTagsError } = await supabase.from('posts_tags').delete().eq('post_id', params.id);
     if (deleteTagsError) throw deleteTagsError;
@@ -68,7 +85,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
 
 // DELETE a post
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
-  const supabase = createClient();
+  const supabase = await createSupabaseServerClient();
   try {
     // The 'posts_tags' entries should be deleted automatically by cascade if set up in DB.
     // If not, they must be deleted manually first.

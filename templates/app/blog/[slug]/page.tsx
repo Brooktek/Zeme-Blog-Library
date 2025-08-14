@@ -28,8 +28,8 @@ async function getPost(slug: string): Promise<Post | null> {
 }
 
 // This function generates the dynamic metadata for the page
-export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
-  const post = await getPost(params.slug);
+export async function generateMetadata({ params: { slug } }: { params: { slug: string } }): Promise<Metadata> {
+  const post = await getPost(slug);
 
   if (!post) {
     return {

@@ -2,17 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import PostForm from '@/components/admin/post-form';
-
-interface Category {
-  id: string;
-  name: string;
-}
-
-interface Tag {
-  id: string;
-  name: string;
-}
+import { PostForm } from '@/components/admin/post-form';
+import { PostData, Category, Tag } from '@/lib/types';
 
 export default function EditPostPage() {
   const router = useRouter();

@@ -23,7 +23,7 @@ html {
         `}</style>
       </head>
       <body>
-        <theme_provider_1.ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
+        <theme_provider_1.ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
           {children}
         </theme_provider_1.ThemeProvider>
       </body>
