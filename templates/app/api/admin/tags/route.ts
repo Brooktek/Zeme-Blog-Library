@@ -1,8 +1,8 @@
-import { createClient } from '@/lib/supabase/server';
+import { createSupabaseServerClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
 
 export async function GET() {
-  const supabase = createClient();
+  const supabase = await createSupabaseServerClient();
   try {
     const { data, error } = await supabase
       .from('tags')
@@ -23,7 +23,7 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const supabase = createClient();
+  const supabase = await createSupabaseServerClient();
   try {
     const { name, slug, description } = await request.json();
 

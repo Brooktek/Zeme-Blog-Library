@@ -1,24 +1,19 @@
 import React, { useState, useEffect } from 'react';
-
-// These types should be centralized, e.g., in @/lib/types
-export type PostData = {
-  title: string;
-  slug: string;
-  content: string;
-  category_id?: number;
-  status: 'draft' | 'published';
-};
+import { PostData, Category, Tag } from '@/lib/types';
 
 interface PostFormProps {
   post?: PostData;
-  onSubmit: (data: PostData) => void;
+  categories: Category[];
+  tags: Tag[];
+  onSave: (data: PostData, selectedTags: string[]) => void;
   isSubmitting?: boolean;
 }
 
-export function PostForm({ post, onSubmit, isSubmitting }: PostFormProps) {
+export function PostForm({ post, categories, tags, onSave, isSubmitting }: PostFormProps) {
   const [formData, setFormData] = useState<PostData>(
-    post || { title: '', slug: '', content: '', status: 'draft' }
+    post || { title: '', slug: '', content: '', status: 'draft', category_id: undefined }
   );
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
 
   useEffect(() => {
     if (post) {
@@ -31,9 +26,14 @@ export function PostForm({ post, onSubmit, isSubmitting }: PostFormProps) {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  const handleTagChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const values = Array.from(e.target.selectedOptions, (option) => option.value);
+    setSelectedTags(values);
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(formData);
+    onSave(formData, selectedTags);
   };
 
   return (
@@ -75,6 +75,38 @@ export function PostForm({ post, onSubmit, isSubmitting }: PostFormProps) {
           className="mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
           required
         />
+      </div>
+
+      <div>
+        <label htmlFor="category_id" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Category</label>
+        <select
+          name="category_id"
+          id="category_id"
+          value={formData.category_id || ''}
+          onChange={handleChange}
+          className="mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+        >
+          <option value="">Select a category</option>
+          {categories.map(cat => (
+            <option key={cat.id} value={cat.id}>{cat.name}</option>
+          ))}
+        </select>
+      </div>
+
+      <div>
+        <label htmlFor="tags" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Tags</label>
+        <select
+          multiple
+          name="tags"
+          id="tags"
+          value={selectedTags}
+          onChange={handleTagChange}
+          className="mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 h-32"
+        >
+          {tags.map(tag => (
+            <option key={tag.id} value={tag.id}>{tag.name}</option>
+          ))}
+        </select>
       </div>
 
       <div>

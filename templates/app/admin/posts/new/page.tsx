@@ -2,18 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import PostForm from '@/components/admin/post-form';
-
-// Define types for the data we'll be fetching
-interface Category {
-  id: string;
-  name: string;
-}
-
-interface Tag {
-  id: string;
-  name: string;
-}
+import { PostForm } from '@/components/admin/post-form';
+import { PostData, Category, Tag } from '@/lib/types';
 
 export default function NewPostPage() {
   const router = useRouter();
@@ -39,8 +29,8 @@ export default function NewPostPage() {
 
         setCategories(catData);
         setTags(tagData);
-      } catch (err: any) {
-        setError(err.message);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'An unknown error occurred');
       } finally {
         setLoading(false);
       }
@@ -49,12 +39,12 @@ export default function NewPostPage() {
     fetchData();
   }, []);
 
-  const handleSave = async (formData: any) => {
+  const handleSave = async (formData: PostData, selectedTags: string[]) => {
     try {
       const response = await fetch('/api/admin/posts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({ ...formData, tag_ids: selectedTags }),
       });
 
       if (!response.ok) {
@@ -64,8 +54,9 @@ export default function NewPostPage() {
 
       // On success, redirect to the posts list
       router.push('/admin/posts');
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred';
+      setError(errorMessage);
       // Optionally, re-throw the error to be handled in the form component
       throw err;
     }
