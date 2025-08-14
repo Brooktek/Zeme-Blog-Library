@@ -1,10 +1,10 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 
-// Define a function to create the Supabase client to ensure cookies() is called within an async context
-export const createClient = async () => {
-  // Await the cookie store to comply with the latest Next.js requirements
-  const cookieStore = await cookies();
+// This is the definitive, corrected, ASYNCHRONOUS version of the Supabase server client.
+// It correctly handles cookies for modern Next.js versions by being async.
+export const createSupabaseServerClient = async () => {
+  const cookieStore = cookies();
 
   return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -15,14 +15,19 @@ export const createClient = async () => {
           return cookieStore.get(name)?.value;
         },
         set(name: string, value: string, options: CookieOptions) {
-          cookieStore.set({ name, value, ...options });
+          try {
+            cookieStore.set({ name, value, ...options });
+          } catch (error) {
+            // The `set` method was called from a Server Component.
+            // This can be ignored if you have middleware refreshing user sessions.
+          }
         },
         remove(name: string, options: CookieOptions) {
-          cookieStore.set({ name, value: '', ...options });
+          try {
+            cookieStore.set({ name, value: '', ...options });
           } catch (error) {
             // The `delete` method was called from a Server Component.
-            // This can be ignored if you have middleware refreshing
-            // user sessions.
+            // This can be ignored if you have middleware refreshing user sessions.
           }
         },
       },

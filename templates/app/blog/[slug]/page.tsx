@@ -1,13 +1,13 @@
 import { BlogPostDetail } from '@/components/blog/blog-post-detail';
 import { Post } from '@/lib/types';
-import { createClient } from '@/lib/supabase/server';
+import { createSupabaseServerClient } from '@/lib/supabase/server';
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import React from 'react';
 
 // This function fetches the data
 async function getPost(slug: string): Promise<Post | null> {
-  const supabase = createClient();
+  const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase
     .from('posts')
     .select(`
