@@ -28,7 +28,8 @@ async function getPost(slug: string): Promise<Post | null> {
 }
 
 // This function generates the dynamic metadata for the page
-export async function generateMetadata({ params: { slug } }: { params: { slug: string } }): Promise<Metadata> {
+export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
+  const { slug } = params;
   const post = await getPost(slug);
 
   if (!post) {
@@ -44,7 +45,8 @@ export async function generateMetadata({ params: { slug } }: { params: { slug: s
 }
 
 // This is the main page component
-export default async function PostPage({ params: { slug } }: { params: { slug: string } }) {
+export default async function PostPage({ params }: { params: { slug: string } }) {
+  const { slug } = params;
   const post = await getPost(slug);
 
   if (!post) {

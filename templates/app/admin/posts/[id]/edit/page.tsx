@@ -50,12 +50,12 @@ export default function EditPostPage() {
     fetchData();
   }, [id]);
 
-  const handleSave = async (formData: any) => {
+  const handleSave = async (formData: PostData, selectedTags: string[]) => {
     try {
       const response = await fetch(`/api/admin/posts/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({ ...formData, tag_ids: selectedTags }),
       });
 
       if (!response.ok) {
