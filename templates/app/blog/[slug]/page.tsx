@@ -1,4 +1,5 @@
-import { BlogPostDetail, Post } from '@/components/blog/blog-post-detail';
+import { BlogPostDetail } from '@/components/blog/blog-post-detail';
+import { Post } from '@/lib/types';
 import { createClient } from '@/lib/supabase/server';
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';

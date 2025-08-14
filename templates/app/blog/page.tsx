@@ -1,9 +1,10 @@
-import { BlogPostList, Post } from '@/components/blog/blog-post-list';
-import { createClient } from '@/lib/supabase/server';
+import { BlogPostList } from '@/components/blog/blog-post-list';
+import { Post } from '@/lib/types';
+import { createSupabaseServerClient } from '@/lib/supabase/server';
 import React from 'react';
 
 async function getPosts(): Promise<Post[]> {
-  const supabase = createClient();
+  const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase
     .from('posts')
     .select(`

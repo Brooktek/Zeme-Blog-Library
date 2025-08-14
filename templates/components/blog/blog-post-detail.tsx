@@ -1,27 +1,10 @@
 import React from 'react';
 import { CategoryBadge } from './category-badge';
 import { TagBadge } from './tag-badge';
-
-// Expanded PostDetail type to include categories and tags
-export type PostDetail = {
-  title: string;
-  content: string; // Assumed to be pre-sanitized HTML
-  created_at: string;
-  author?: {
-    name: string;
-  };
-  categories: {
-    slug: string;
-    name: string;
-  } | null;
-  tags: {
-    slug: string;
-    name: string;
-  }[];
-};
+import { Post } from '@/lib/types';
 
 interface BlogPostDetailProps {
-  post: PostDetail;
+  post: Post;
 }
 
 export function BlogPostDetail({ post }: BlogPostDetailProps) {

@@ -1,4 +1,5 @@
-import { BlogPostCard, Post } from '@/components/blog/blog-post-card';
+import { BlogPostCard } from '@/components/blog/blog-post-card';
+import { Post } from '@/lib/types';
 
 interface BlogPostListProps {
   posts: Post[];

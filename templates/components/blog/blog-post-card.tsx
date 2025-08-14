@@ -1,22 +1,7 @@
 import Link from 'next/link';
 import { CategoryBadge } from './category-badge';
 import { TagBadge } from './tag-badge';
-
-// Expanded Post type to include more details for the card display
-export type Post = {
-  slug: string;
-  title: string;
-  excerpt?: string;
-  created_at: string;
-  categories: {
-    slug: string;
-    name: string;
-  } | null;
-  tags: {
-    slug: string;
-    name: string;
-  }[];
-};
+import { Post } from '@/lib/types';
 
 interface BlogPostCardProps {
   post: Post;
