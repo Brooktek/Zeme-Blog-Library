@@ -1,6 +1,0 @@
-{
-  "scripts": {
-    "blog:migrate": "echo 'Run the SQL scripts in scripts/ directory in your Supabase dashboard'",
-    "blog:seed": "echo 'Seed data is included in the migration scripts'"
-  }
-}
