@@ -4,7 +4,8 @@ import { cookies } from 'next/headers';
 // This is the definitive, corrected, ASYNCHRONOUS version of the Supabase server client.
 // It correctly handles cookies for modern Next.js versions by being async.
 export const createSupabaseServerClient = async () => {
-  const cookieStore = cookies();
+  // The key fix: `cookies()` returns a promise-like object that must be awaited.
+  const cookieStore = await cookies();
 
   return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -17,7 +18,7 @@ export const createSupabaseServerClient = async () => {
         set(name: string, value: string, options: CookieOptions) {
           try {
             cookieStore.set({ name, value, ...options });
-          } catch (error) {
+          } catch (_error) {
             // The `set` method was called from a Server Component.
             // This can be ignored if you have middleware refreshing user sessions.
           }
@@ -25,7 +26,7 @@ export const createSupabaseServerClient = async () => {
         remove(name: string, options: CookieOptions) {
           try {
             cookieStore.set({ name, value: '', ...options });
-          } catch (error) {
+          } catch (_error) {
             // The `delete` method was called from a Server Component.
             // This can be ignored if you have middleware refreshing user sessions.
           }

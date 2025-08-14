@@ -2,13 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-
-interface Post {
-  id: string;
-  title: string;
-  status: 'published' | 'draft';
-  created_at: string;
-}
+import { Post } from '@/lib/types'; // Using the centralized Post type
 
 export default function AdminPostsPage() {
   const [posts, setPosts] = useState<Post[]>([]);
@@ -22,8 +16,8 @@ export default function AdminPostsPage() {
       if (!response.ok) throw new Error('Failed to fetch posts');
       const data = await response.json();
       setPosts(data);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An unknown error occurred');
     } finally {
       setLoading(false);
     }
@@ -46,8 +40,8 @@ export default function AdminPostsPage() {
 
         // Refresh the list after deletion
         setPosts(posts.filter(p => p.id !== postId));
-      } catch (err: any) {
-        setError(err.message);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'An unknown error occurred');
       }
     }
   };

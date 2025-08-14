@@ -1,8 +1,8 @@
-import { createClient } from '@/lib/supabase/server';
+import { createSupabaseServerClient } from '@/lib/supabase/server';
 import { NextResponse, type NextRequest } from 'next/server';
 
 export async function GET(request: Request) {
-  const supabase = createClient();
+  const supabase = await createSupabaseServerClient();
 
   try {
     // For the admin panel, we fetch all posts, not just 'published' ones
@@ -37,7 +37,7 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: NextRequest) {
-  const supabase = createClient();
+  const supabase = await createSupabaseServerClient();
   try {
     const { title, content, slug, category_id, status, tag_ids } = await request.json();
 
@@ -93,6 +93,5 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-}
 }
 
