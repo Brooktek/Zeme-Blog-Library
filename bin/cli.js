@@ -5,7 +5,7 @@ const path = require("path")
 
 // Check if dist files exist
 try {
-  const { installBlog } = require("../dist/cli/install")
+  const { installBlog } = require("../dist/src/cli/install")
 
   program
     .name("zeme-blog-system")
