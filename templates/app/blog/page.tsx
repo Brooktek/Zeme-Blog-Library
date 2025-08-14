@@ -27,12 +27,12 @@ export default async function BlogPage() {
   const posts = await getPosts();
 
   return (
-    <div className="container mx-auto py-8 px-4">
-      <h1 className="text-4xl font-bold mb-8 text-center text-gray-800 dark:text-white">Our Blog</h1>
+    <div className="container mx-auto max-w-4xl py-12 px-4">
+      <h1 className="text-4xl font-bold mb-8 text-center text-primary">Our Blog</h1>
       {posts.length > 0 ? (
         <BlogPostList posts={posts} />
       ) : (
-        <p className="text-center text-gray-500 dark:text-gray-400">No posts found. Check back later!</p>
+        <p className="text-center text-muted-foreground">No posts found. Check back later!</p>
       )}
     </div>
   );

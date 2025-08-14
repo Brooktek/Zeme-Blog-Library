@@ -48,7 +48,6 @@ export async function POST(request: NextRequest) {
         title,
         content,
         slug,
-        category_id,
         status,
       })
       .select()
@@ -57,20 +56,33 @@ export async function POST(request: NextRequest) {
     if (postError) {
       // Handle potential duplicate slug error
       if (postError.code === '23505') {
-        // unique_violation
         return NextResponse.json({ message: 'A post with this slug already exists.' }, { status: 409 });
       }
       throw postError;
     }
 
-    // 2. If tags are provided, link them in the join table
+    // 2. If a category is provided, link it in the join table
+    if (category_id) {
+      const { error: categoryError } = await supabase.from('post_categories').insert({
+        post_id: post.id,
+        category_id: Number(category_id),
+      });
+
+      if (categoryError) {
+        // Log the error but don't block the response, as the post itself was created
+        console.error('Error linking category:', categoryError);
+        // In a real-world app, you might want to return a specific status or message
+      }
+    }
+
+    // 3. If tags are provided, link them in the join table
     if (tag_ids && tag_ids.length > 0) {
       const tagsToInsert = tag_ids.map((tag_id: string) => ({
         post_id: post.id,
-        tag_id: tag_id,
+        tag_id: Number(tag_id),
       }));
 
-      const { error: tagsError } = await supabase.from('posts_tags').insert(tagsToInsert);
+      const { error: tagsError } = await supabase.from('post_tags').insert(tagsToInsert);
 
       if (tagsError) {
         // If linking tags fails, we should ideally roll back the post creation.

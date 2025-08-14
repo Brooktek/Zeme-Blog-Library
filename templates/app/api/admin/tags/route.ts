@@ -6,7 +6,7 @@ export async function GET() {
   try {
     const { data, error } = await supabase
       .from('tags')
-      .select('id, name, slug, description') // Expanded for the list view
+      .select('id, name, slug') // Corrected to select only existing columns
       .order('name', { ascending: true });
 
     if (error) throw error;
@@ -25,11 +25,11 @@ export async function GET() {
 export async function POST(request: Request) {
   const supabase = await createSupabaseServerClient();
   try {
-    const { name, slug, description } = await request.json();
+    const { name, slug } = await request.json();
 
     const { data, error } = await supabase
       .from('tags')
-      .insert({ name, slug, description })
+      .insert({ name, slug })
       .select()
       .single();
 

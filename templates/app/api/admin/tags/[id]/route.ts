@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server';
+import { createSupabaseServerClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
 
 // GET a single tag by ID
@@ -27,12 +27,13 @@ export async function GET(request: Request, { params }: { params: { id: string }
 
 // UPDATE a tag
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
-  const supabase = createClient();
+  const supabase = createSupabaseServerClient();
   try {
-    const { name, slug, description } = await request.json();
-    const { error } = await supabase
+    const { name, slug } = await request.json();
+
+    const { data, error } = await supabase
       .from('tags')
-      .update({ name, slug, description })
+      .update({ name, slug })
       .eq('id', params.id);
 
     if (error) {
