@@ -1,9 +1,9 @@
-import { createClient } from '@/lib/supabase/server';
+import { createSupabaseServerClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
 
 // GET a single category by ID
 export async function GET(request: Request, { params }: { params: { id: string } }) {
-  const supabase = createClient();
+  const supabase = await createSupabaseServerClient();
   try {
     const { data, error } = await supabase
       .from('categories')
@@ -27,7 +27,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
 
 // UPDATE a category
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
-  const supabase = createClient();
+  const supabase = await createSupabaseServerClient();
   try {
     const { name, slug, description } = await request.json();
     const { error } = await supabase
@@ -55,7 +55,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
 
 // DELETE a category
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
-  const supabase = createClient();
+  const supabase = await createSupabaseServerClient();
   try {
     const { error } = await supabase.from('categories').delete().eq('id', params.id);
 

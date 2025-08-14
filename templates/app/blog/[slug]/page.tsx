@@ -44,8 +44,8 @@ export async function generateMetadata({ params: { slug } }: { params: { slug: s
 }
 
 // This is the main page component
-export default async function PostPage({ params }: { params: { slug: string } }) {
-  const post = await getPost(params.slug);
+export default async function PostPage({ params: { slug } }: { params: { slug: string } }) {
+  const post = await getPost(slug);
 
   if (!post) {
     notFound();
