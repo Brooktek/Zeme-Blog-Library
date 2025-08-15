@@ -10,7 +10,7 @@ export interface PostFormData {
     slug: string;
     excerpt: string;
     content: string;
-    featured_image_url: string;
+    cover_image_url: string;
     category_id: string;
     status: "draft" | "published" | "archived";
     meta_title: string;

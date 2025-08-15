@@ -23,7 +23,7 @@ export default function NewPostPage() {
           slug: data.slug,
           excerpt: data.excerpt || null,
           content: data.content,
-          featured_image_url: data.featured_image_url || null,
+          cover_image_url: data.cover_image_url || null,
           category_id: data.category_id || null,
           status: data.status,
           published_at: data.status === "published" ? new Date().toISOString() : null,

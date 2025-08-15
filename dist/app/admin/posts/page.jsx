@@ -98,8 +98,8 @@ function AdminPostsPage() {
                     <div className="flex items-center gap-3 mb-2">
                       <h3 className="font-medium truncate">{post.title}</h3>
                       <badge_1.Badge className={getStatusColor(post.status)}>{post.status}</badge_1.Badge>
-                      {post.blog_categories && (<badge_1.Badge variant="outline" className="text-xs">
-                          {post.blog_categories.name}
+                      {post.categories && (<badge_1.Badge variant="outline" className="text-xs">
+                          {post.categories.name}
                         </badge_1.Badge>)}
                     </div>
                     {post.excerpt && <p className="text-sm text-muted-foreground truncate">{post.excerpt}</p>}

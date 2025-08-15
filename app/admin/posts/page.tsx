@@ -117,9 +117,9 @@ export default function AdminPostsPage() {
                     <div className="flex items-center gap-3 mb-2">
                       <h3 className="font-medium truncate">{post.title}</h3>
                       <Badge className={getStatusColor(post.status)}>{post.status}</Badge>
-                      {post.blog_categories && (
+                      {post.categories && (
                         <Badge variant="outline" className="text-xs">
-                          {post.blog_categories.name}
+                          {post.categories.name}
                         </Badge>
                       )}
                     </div>

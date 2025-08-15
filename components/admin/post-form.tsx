@@ -25,7 +25,7 @@ export interface PostFormData {
   slug: string
   excerpt: string
   content: string
-  featured_image_url: string
+  cover_image_url: string
   category_id: string
   status: "draft" | "published" | "archived"
   meta_title: string
@@ -45,19 +45,19 @@ export function PostForm({ post, onSubmit, isLoading = false }: PostFormProps) {
     slug: post?.slug || "",
     excerpt: post?.excerpt || "",
     content: post?.content || "",
-    featured_image_url: post?.featured_image_url || "",
-    category_id: post?.blog_categories?.id || "",
+    cover_image_url: post?.cover_image_url || "",
+    category_id: post?.categories?.id || "",
     status: post?.status || "draft",
     meta_title: post?.meta_title || "",
     meta_description: post?.meta_description || "",
-    tag_ids: post?.blog_post_tags?.map((pt) => pt.blog_tags.id) || [],
+    tag_ids: post?.post_tags?.map((pt) => pt.tags.id) || [],
   })
 
   useEffect(() => {
     loadCategories()
     loadTags()
-    if (post?.blog_post_tags) {
-      setSelectedTags(post.blog_post_tags.map((pt) => pt.blog_tags.id))
+    if (post?.post_tags) {
+      setSelectedTags(post.post_tags.map((pt) => pt.tags.id))
     }
   }, [post])
 
@@ -242,11 +242,11 @@ export function PostForm({ post, onSubmit, isLoading = false }: PostFormProps) {
               </div>
 
               <div>
-                <Label htmlFor="featured_image">Featured Image URL</Label>
+                <Label htmlFor="featured_image">Cover Image URL</Label>
                 <Input
                   id="featured_image"
-                  value={formData.featured_image_url}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, featured_image_url: e.target.value }))}
+                                  value={formData.cover_image_url}
+                onChange={(e) => setFormData((prev) => ({ ...prev, cover_image_url: e.target.value }))}
                   placeholder="https://example.com/image.jpg"
                 />
               </div>
