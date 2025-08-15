@@ -15,6 +15,8 @@ export function PostForm({ post, categories, tags, onSave, isSubmitting }: PostF
   );
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [coverImageFile, setCoverImageFile] = useState<File>();
+  const [fileError, setFileError] = useState<string>('');
+  const [isUploading, setIsUploading] = useState(false);
 
   useEffect(() => {
     if (post) {
@@ -38,15 +40,54 @@ export function PostForm({ post, categories, tags, onSave, isSubmitting }: PostF
     setSelectedTags(values);
   };
 
+  const validateFile = (file: File): string | null => {
+    // Check file type
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      return 'Invalid file type. Only JPEG, PNG, GIF, and WebP images are allowed.';
+    }
+
+    // Check file size (5MB limit)
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    if (file.size > maxSize) {
+      return 'File too large. Maximum size is 5MB.';
+    }
+
+    return null;
+  };
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFileError('');
+    
     if (e.target.files && e.target.files[0]) {
-      setCoverImageFile(e.target.files[0]);
+      const file = e.target.files[0];
+      const validationError = validateFile(file);
+      
+      if (validationError) {
+        setFileError(validationError);
+        setCoverImageFile(undefined);
+        e.target.value = '';
+        return;
+      }
+      
+      setCoverImageFile(file);
+      console.log('File selected:', { name: file.name, size: file.size, type: file.type });
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onSave(formData, selectedTags, coverImageFile);
+    
+    if (fileError) {
+      return; // Don't submit if there's a file error
+    }
+    
+    setIsUploading(true);
+    try {
+      await onSave(formData, selectedTags, coverImageFile);
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   return (
@@ -78,14 +119,31 @@ export function PostForm({ post, categories, tags, onSave, isSubmitting }: PostF
       </div>
 
       <div>
-        <label htmlFor="cover_image" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Cover Image</label>
+        <label htmlFor="cover_image" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+          Cover Image
+          <span className="text-xs text-gray-500 ml-2">(JPEG, PNG, GIF, WebP, max 5MB)</span>
+        </label>
         <input
           type="file"
           name="cover_image"
           id="cover_image"
+          accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
           onChange={handleFileChange}
           className="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
         />
+        
+        {fileError && (
+          <div className="mt-2 text-sm text-red-600 bg-red-50 p-2 rounded-md">
+            {fileError}
+          </div>
+        )}
+        
+        {coverImageFile && (
+          <div className="mt-2 text-sm text-green-600 bg-green-50 p-2 rounded-md">
+            File selected: {coverImageFile.name} ({(coverImageFile.size / 1024 / 1024).toFixed(2)} MB)
+          </div>
+        )}
+        
         {formData.cover_image_url && !coverImageFile && (
           <div className="mt-4">
             <p className="text-sm text-gray-500">Current image:</p>
@@ -156,10 +214,10 @@ export function PostForm({ post, categories, tags, onSave, isSubmitting }: PostF
       <div className="flex justify-end">
         <button
           type="submit"
-          disabled={isSubmitting}
+          disabled={isSubmitting || isUploading}
           className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
         >
-          {isSubmitting ? 'Saving...' : 'Save Post'}
+          {isSubmitting || isUploading ? 'Saving...' : 'Save Post'}
         </button>
       </div>
     </form>

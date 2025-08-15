@@ -44,6 +44,8 @@ export default function NewPostPage() {
       let coverImageUrl = '';
 
       if (coverImageFile) {
+        console.log('Uploading cover image...', { fileName: coverImageFile.name, size: coverImageFile.size });
+        
         const uploadFormData = new FormData();
         uploadFormData.append('file', coverImageFile);
 
@@ -53,11 +55,15 @@ export default function NewPostPage() {
         });
 
         if (!uploadResponse.ok) {
-          throw new Error('Failed to upload cover image');
+          const errorData = await uploadResponse.json();
+          const errorMessage = errorData.message || 'Failed to upload cover image';
+          console.error('Upload failed:', errorData);
+          throw new Error(errorMessage);
         }
 
         const uploadResult = await uploadResponse.json();
         coverImageUrl = uploadResult.url;
+        console.log('Cover image uploaded successfully:', coverImageUrl);
       }
 
       const postDataWithImage = {
@@ -65,6 +71,8 @@ export default function NewPostPage() {
         tag_ids: selectedTags,
         cover_image_url: coverImageUrl,
       };
+
+      console.log('Creating post with data:', postDataWithImage);
 
       const response = await fetch('/api/admin/posts', {
         method: 'POST',
@@ -77,11 +85,13 @@ export default function NewPostPage() {
         throw new Error(errorData.message || 'Failed to create post');
       }
 
+      console.log('Post created successfully');
       router.push('/admin/posts');
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred';
+      console.error('Error in handleSave:', err);
       setError(errorMessage);
-      throw err;
+      // Don't re-throw the error, just set it in state
     }
   };
 

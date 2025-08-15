@@ -15,7 +15,7 @@ The blog system uses Supabase for its backend. If you don't have one, create a n
 3.  Navigate to **Project Settings** > **API**.
 4.  You will need the following information for the next step:
     *   **Project URL**
-    *   **Project API keys** (`anon` and `service_role`)
+    *   **Project API keys** (`anon` key is sufficient for image uploads)
 
 ## Step 2: Set Up Environment Variables
 
@@ -24,10 +24,9 @@ Create a new file named `.env.local` in the root of your Next.js project and add
 ```env
 NEXT_PUBLIC_SUPABASE_URL=YOUR_SUPABASE_URL
 NEXT_PUBLIC_SUPABASE_ANON_KEY=YOUR_SUPABASE_ANON_KEY
-SUPABASE_SERVICE_ROLE_KEY=YOUR_SUPABASE_SERVICE_ROLE_KEY
 ```
 
-Replace the placeholder values with the actual keys from your Supabase dashboard.
+**Note**: Only the `anon` key is required. The system is designed to work without authentication for image uploads.
 
 ## Step 3: Install and Run the CLI
 
@@ -52,7 +51,38 @@ The installer adds the complete database schema to `templates/scripts/schema.sql
 3.  Copy the entire content of the `schema.sql` file and paste it into the editor.
 4.  Click **Run** to create the `posts`, `categories`, `tags`, and `posts_tags` tables.
 
-## Step 5: Start the Development Server
+## Step 5: Configure Storage for Image Uploads
+
+The blog system includes image upload functionality that works without authentication:
+
+1.  In your Supabase dashboard, go to **Storage**.
+2.  Create a new bucket named `post-images`.
+3.  Set the bucket to **public** (this allows unauthenticated uploads).
+4.  Configure the following storage policies:
+
+    **For public read access:**
+    ```sql
+    CREATE POLICY "Allow public read access" ON storage.objects
+    FOR SELECT
+    USING (bucket_id = 'post-images');
+    ```
+
+    **For anonymous uploads:**
+    ```sql
+    CREATE POLICY "Allow anonymous uploads" ON storage.objects
+    FOR INSERT
+    WITH CHECK (bucket_id = 'post-images');
+    ```
+
+## Step 6: Test Your Setup
+
+Before starting your development server, test your configuration:
+
+1. **Test Connection**: Visit `/api/test-connection` in your browser
+2. **Check Environment**: Ensure your `.env.local` file is properly configured
+3. **Verify Storage**: Confirm the `post-images` bucket exists and is public
+
+## Step 7: Start the Development Server
 
 That's it! Start your development server to see the blog in action:
 
@@ -62,6 +92,17 @@ npm run dev
 
 - Your public-facing blog will be available at `/blog`.
 - Your admin dashboard will be at `/admin`.
+- Test image uploads at `/admin/posts/new`.
+
+## Image Upload Features
+
+The system includes comprehensive image upload functionality:
+
+- **No Authentication Required**: Images can be uploaded anonymously
+- **File Validation**: Supports JPEG, PNG, GIF, and WebP formats up to 5MB
+- **Error Handling**: Comprehensive error messages and validation feedback
+- **Public Access**: Uploaded images are publicly accessible
+- **Client & Server Validation**: Both client-side and server-side file validation
 
 ## Next Steps
 
@@ -88,7 +129,7 @@ const blogConfig = {
 
 ## Admin Dashboard
 
-Access the admin dashboard at `/admin` to manage your blog posts, categories, and tags.
+Access the admin dashboard at `/admin` to manage your blog posts, categories, and tags. The image upload functionality is fully integrated into the post creation and editing forms.
 
 ## API Endpoints
 
@@ -100,6 +141,8 @@ The system provides REST API endpoints:
 - `POST /api/blog/posts` - Create new post
 - `PUT /api/blog/posts/[id]` - Update post
 - `DELETE /api/blog/posts/[id]` - Delete post
+- `POST /api/admin/upload` - Upload images (no auth required)
+- `GET /api/test-connection` - Test Supabase connection
 
 Similar endpoints exist for categories and tags.
 
@@ -127,6 +170,16 @@ module.exports = {
 ### Components
 
 All components are fully customizable. Copy them to your project and modify as needed.
+
+## Troubleshooting
+
+If you encounter issues:
+
+1. **Check Environment Variables**: Ensure `.env.local` contains your Supabase credentials
+2. **Verify Storage Bucket**: Confirm `post-images` bucket exists and is public
+3. **Test Connection**: Use `/api/test-connection` to diagnose issues
+4. **Check Console**: Monitor browser console for detailed error messages
+5. **Storage Policies**: Verify storage policies allow public read and anonymous insert
 
 ## Deployment
 
