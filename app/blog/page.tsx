@@ -1,9 +1,6 @@
 import { BlogPostList } from "@/components/blog/blog-post-list"
-import { getBlogPosts, getBlogCategories } from "@/lib/blog-api"
 
-export default async function BlogPage() {
-  const [posts, categories] = await Promise.all([getBlogPosts(), getBlogCategories()])
-
+export default function BlogPage() {
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-12">
@@ -14,7 +11,7 @@ export default async function BlogPage() {
           </p>
         </div>
 
-        <BlogPostList initialPosts={posts} initialCategories={categories} showFilters={true} />
+        <BlogPostList showFilters={true} />
       </div>
     </div>
   )

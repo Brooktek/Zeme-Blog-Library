@@ -50,12 +50,37 @@ export default function EditPostPage() {
     fetchData();
   }, [id]);
 
-  const handleSave = async (formData: PostData, selectedTags: string[]) => {
+  const handleSave = async (formData: PostData, selectedTags: string[], coverImageFile?: File) => {
     try {
+      let coverImageUrl = formData.cover_image_url; // Keep existing image by default
+
+      if (coverImageFile) {
+        const uploadFormData = new FormData();
+        uploadFormData.append('file', coverImageFile);
+
+        const uploadResponse = await fetch('/api/admin/upload', {
+          method: 'POST',
+          body: uploadFormData,
+        });
+
+        if (!uploadResponse.ok) {
+          throw new Error('Failed to upload cover image');
+        }
+
+        const uploadResult = await uploadResponse.json();
+        coverImageUrl = uploadResult.url;
+      }
+
+      const postDataWithImage = {
+        ...formData,
+        tag_ids: selectedTags,
+        cover_image_url: coverImageUrl,
+      };
+
       const response = await fetch(`/api/admin/posts/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...formData, tag_ids: selectedTags }),
+        body: JSON.stringify(postDataWithImage),
       });
 
       if (!response.ok) {
@@ -78,7 +103,7 @@ export default function EditPostPage() {
     <div className="p-6">
       <h1 className="text-2xl font-bold text-gray-800 dark:text-white mb-6">Edit Post</h1>
       <PostForm
-        initialData={post}
+        post={post}
         categories={categories}
         tags={tags}
         onSave={handleSave}

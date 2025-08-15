@@ -39,12 +39,37 @@ export default function NewPostPage() {
     fetchData();
   }, []);
 
-  const handleSave = async (formData: PostData, selectedTags: string[]) => {
+  const handleSave = async (formData: PostData, selectedTags: string[], coverImageFile?: File) => {
     try {
+      let coverImageUrl = '';
+
+      if (coverImageFile) {
+        const uploadFormData = new FormData();
+        uploadFormData.append('file', coverImageFile);
+
+        const uploadResponse = await fetch('/api/admin/upload', {
+          method: 'POST',
+          body: uploadFormData,
+        });
+
+        if (!uploadResponse.ok) {
+          throw new Error('Failed to upload cover image');
+        }
+
+        const uploadResult = await uploadResponse.json();
+        coverImageUrl = uploadResult.url;
+      }
+
+      const postDataWithImage = {
+        ...formData,
+        tag_ids: selectedTags,
+        cover_image_url: coverImageUrl,
+      };
+
       const response = await fetch('/api/admin/posts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...formData, tag_ids: selectedTags }),
+        body: JSON.stringify(postDataWithImage),
       });
 
       if (!response.ok) {
@@ -52,12 +77,10 @@ export default function NewPostPage() {
         throw new Error(errorData.message || 'Failed to create post');
       }
 
-      // On success, redirect to the posts list
       router.push('/admin/posts');
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred';
       setError(errorMessage);
-      // Optionally, re-throw the error to be handled in the form component
       throw err;
     }
   };

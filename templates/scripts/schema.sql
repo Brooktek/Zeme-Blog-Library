@@ -22,6 +22,7 @@ CREATE TABLE IF NOT EXISTS posts (
     title VARCHAR(255) NOT NULL,
     slug VARCHAR(255) NOT NULL UNIQUE,
     content TEXT NOT NULL,
+    cover_image_url TEXT,
     excerpt TEXT,
     status VARCHAR(50) NOT NULL DEFAULT 'draft', -- e.g., 'draft', 'published'
     author_id UUID REFERENCES auth.users(id), -- Optional: if you have user profiles

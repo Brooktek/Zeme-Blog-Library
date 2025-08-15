@@ -39,7 +39,7 @@ export function BlogPostDetail({ slug }: BlogPostDetailProps) {
 
   const loadRelatedPosts = async (currentPost: BlogPost) => {
     try {
-      const related = await getRelatedPosts(currentPost.id, currentPost.blog_categories?.id)
+      const related = await getRelatedPosts(currentPost.id, currentPost.categories?.id)
       setRelatedPosts(related)
     } catch (error) {
       console.error("Error loading related posts:", error)
@@ -140,15 +140,15 @@ export function BlogPostDetail({ slug }: BlogPostDetailProps) {
           {post.excerpt && <p className="text-xl text-muted-foreground leading-relaxed">{post.excerpt}</p>}
 
           <div className="flex flex-wrap gap-2">
-            {post.blog_categories && (
+            {post.categories && (
               <Badge variant="secondary" className="bg-primary/10 text-primary">
-                {post.blog_categories.name}
+                {post.categories.name}
               </Badge>
             )}
 
-            {post.blog_post_tags?.map((tagRelation) => (
-              <Badge key={tagRelation.blog_tags.id} variant="outline">
-                {tagRelation.blog_tags.name}
+            {post.post_tags?.map((tagRelation) => (
+              <Badge key={tagRelation.tags.id} variant="outline">
+                {tagRelation.tags.name}
               </Badge>
             ))}
           </div>
@@ -156,10 +156,10 @@ export function BlogPostDetail({ slug }: BlogPostDetailProps) {
       </div>
 
       {/* Featured Image */}
-      {post.featured_image_url && (
+      {post.cover_image_url && (
         <div className="mb-8 overflow-hidden rounded-lg">
           <img
-            src={post.featured_image_url || "/placeholder.svg"}
+            src={post.cover_image_url || "/placeholder.svg"}
             alt={post.title}
             className="w-full h-64 md:h-96 object-cover"
           />

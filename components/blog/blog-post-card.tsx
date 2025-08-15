@@ -24,10 +24,10 @@ export function BlogPostCard({ post, variant = "default" }: BlogPostCardProps) {
         variant === "featured" ? "md:col-span-2 lg:col-span-3" : ""
       }`}
     >
-      {post.featured_image_url && (
+      {post.cover_image_url && (
         <div className={`overflow-hidden ${variant === "featured" ? "h-64" : "h-48"}`}>
           <img
-            src={post.featured_image_url || "/placeholder.svg"}
+            src={post.cover_image_url || "/placeholder.svg"}
             alt={post.title}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
           />
@@ -70,21 +70,21 @@ export function BlogPostCard({ post, variant = "default" }: BlogPostCardProps) {
 
       <CardContent className="space-y-4">
         <div className="flex flex-wrap gap-2">
-          {post.blog_categories && (
+          {post.categories && (
             <Badge variant="secondary" className="bg-primary/10 text-primary hover:bg-primary/20">
-              {post.blog_categories.name}
+              {post.categories.name}
             </Badge>
           )}
 
-          {post.blog_post_tags?.slice(0, 3).map((tagRelation) => (
-            <Badge key={tagRelation.blog_tags.id} variant="outline" className="text-xs">
-              {tagRelation.blog_tags.name}
+          {post.post_tags?.slice(0, 3).map((tagRelation) => (
+            <Badge key={tagRelation.tags.id} variant="outline" className="text-xs">
+              {tagRelation.tags.name}
             </Badge>
           ))}
 
-          {post.blog_post_tags && post.blog_post_tags.length > 3 && (
+          {post.post_tags && post.post_tags.length > 3 && (
             <Badge variant="outline" className="text-xs">
-              +{post.blog_post_tags.length - 3} more
+              +{post.post_tags.length - 3} more
             </Badge>
           )}
         </div>

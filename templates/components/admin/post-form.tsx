@@ -5,15 +5,16 @@ interface PostFormProps {
   post?: PostData;
   categories: Category[];
   tags: Tag[];
-  onSave: (data: PostData, selectedTags: string[]) => void;
+  onSave: (data: PostData, selectedTags: string[], coverImageFile?: File) => void;
   isSubmitting?: boolean;
 }
 
 export function PostForm({ post, categories, tags, onSave, isSubmitting }: PostFormProps) {
   const [formData, setFormData] = useState<PostData>(
-    post || { title: '', slug: '', content: '', status: 'draft', category_id: undefined }
+    post || { title: '', slug: '', content: '', status: 'draft', category_id: undefined, cover_image_url: '' }
   );
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [coverImageFile, setCoverImageFile] = useState<File>();
 
   useEffect(() => {
     if (post) {
@@ -37,9 +38,15 @@ export function PostForm({ post, categories, tags, onSave, isSubmitting }: PostF
     setSelectedTags(values);
   };
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setCoverImageFile(e.target.files[0]);
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSave(formData, selectedTags);
+    onSave(formData, selectedTags, coverImageFile);
   };
 
   return (
@@ -68,6 +75,23 @@ export function PostForm({ post, categories, tags, onSave, isSubmitting }: PostF
           className="mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
           required
         />
+      </div>
+
+      <div>
+        <label htmlFor="cover_image" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Cover Image</label>
+        <input
+          type="file"
+          name="cover_image"
+          id="cover_image"
+          onChange={handleFileChange}
+          className="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
+        />
+        {formData.cover_image_url && !coverImageFile && (
+          <div className="mt-4">
+            <p className="text-sm text-gray-500">Current image:</p>
+            <img src={formData.cover_image_url} alt="Current cover" className="mt-2 w-full max-w-xs h-auto rounded-md" />
+          </div>
+        )}
       </div>
 
       <div>

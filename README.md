@@ -11,6 +11,7 @@ A production-ready, modular blog system for Next.js applications with a Supabase
 - **Component-Based**: Includes a set of clean, reusable components for your public-facing blog.
 - **Responsive Design**: Mobile-first design with dark theme support.
 - **Type Safe**: Full TypeScript support for all components and APIs.
+- **Image Uploads**: Built-in support for uploading cover images for blog posts.
 
 ## Quick Start
 
@@ -39,7 +40,46 @@ npx shadcn@latest add sheet
 
 The installer will guide you through the required setup steps.
 
-For a complete walkthrough, including setting up your Supabase project and environment variables, see the [**Installation Guide**](./INSTALL.md).
+For a complete walkthrough, see the [**Installation Guide**](./INSTALL.md).
+
+## Configuration
+
+To connect the blog system to your Supabase project, you'll need to set up a few environment variables and create a storage bucket for images.
+
+### 1. Environment Variables
+
+Create a `.env.local` file in the root of your project and add the following variables:
+
+```
+NEXT_PUBLIC_SUPABASE_URL=your-supabase-project-url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
+```
+
+You can find these keys in your Supabase project's **Settings > API** page.
+
+### 2. Supabase Storage Bucket
+
+The blog system uses Supabase Storage to handle image uploads for post cover images.
+
+1.  Go to the **Storage** section in your Supabase dashboard.
+2.  Create a new public bucket named `post-images`.
+3.  Set up the following access policies for the `post-images` bucket to allow public reads and authenticated uploads:
+
+    **For public read access (select/get):**
+    ```sql
+    -- Policy: Allow public read access to files in post-images
+    CREATE POLICY "Allow public read access" ON storage.objects
+    FOR SELECT
+    USING (bucket_id = 'post-images');
+    ```
+
+    **For authenticated uploads (insert):**
+    ```sql
+    -- Policy: Allow authenticated users to upload to post-images
+    CREATE POLICY "Allow authenticated uploads" ON storage.objects
+    FOR INSERT
+    WITH CHECK (bucket_id = 'post-images' AND auth.role() = 'authenticated');
+    ```
 
 ## What's Included?
 

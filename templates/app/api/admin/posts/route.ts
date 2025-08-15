@@ -41,17 +41,11 @@ export async function POST(request: NextRequest) {
   try {
     const { title, content, slug, category_id, status, tag_ids } = await request.json();
 
-    // 1. Insert the post with its category
+    // 1. Insert the post (without category)
     const { data: post, error: postError } = await supabase
       .from('posts')
-      .insert({
-        title,
-        content,
-        slug,
-        status,
-        category_id: category_id || null, // Directly insert the category_id
-      })
-      .select()
+      .insert({ title, content, slug, status })
+      .select('id')
       .single();
 
     if (postError) {
@@ -61,7 +55,19 @@ export async function POST(request: NextRequest) {
       throw postError;
     }
 
-    // 2. If tags are provided, link them in the join table
+    // 2. Link the category in the join table
+    if (category_id) {
+      const { error: categoryError } = await supabase
+        .from('post_categories')
+        .insert({ post_id: post.id, category_id: category_id });
+
+      if (categoryError) {
+        console.error('Error linking category:', categoryError);
+        // Depending on requirements, you might want to handle this error more gracefully
+      }
+    }
+
+    // 3. If tags are provided, link them in the join table
     if (tag_ids && tag_ids.length > 0) {
       const tagsToInsert = tag_ids.map((tag_id: string) => ({
         post_id: post.id,

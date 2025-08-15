@@ -1,6 +1,6 @@
 {
   "name": "zeme-blog-system",
-  "version": "0.2.27",
+  "version": "0.2.29",
   "bin": "./bin/cli.js",
   "files": [
     "dist",
