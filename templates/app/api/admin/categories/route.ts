@@ -5,7 +5,7 @@ export async function GET() {
   const supabase = await createSupabaseServerClient();
   try {
     const { data, error } = await supabase
-      .from('categories')
+      .from('blog_categories')
       .select('id, name, slug, description') // Expanded to get more data for the list view
       .order('name', { ascending: true });
 
@@ -28,7 +28,7 @@ export async function POST(request: Request) {
     const { name, slug, description } = await request.json();
 
     const { data, error } = await supabase
-      .from('categories')
+      .from('blog_categories')
       .insert({ name, slug, description })
       .select()
       .single();
