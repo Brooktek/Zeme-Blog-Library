@@ -17,7 +17,13 @@ export function PostForm({ post, categories, tags, onSave, isSubmitting }: PostF
 
   useEffect(() => {
     if (post) {
-      setFormData(post);
+      setFormData({
+        ...post,
+        category_id: post.category_id || '',
+      });
+      if (post.tags) {
+        setSelectedTags(post.tags.map(t => t.id));
+      }
     }
   }, [post]);
 

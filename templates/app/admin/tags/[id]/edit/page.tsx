@@ -12,7 +12,6 @@ export default function EditTagPage() {
 
   const [name, setName] = useState('');
   const [slug, setSlug] = useState('');
-  const [description, setDescription] = useState('');
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -27,7 +26,6 @@ export default function EditTagPage() {
         const data: Tag = await response.json();
         setName(data.name);
         setSlug(data.slug);
-        setDescription(data.description || '');
       } catch (err: any) {
         setError(err.message);
       } finally {
@@ -47,7 +45,7 @@ export default function EditTagPage() {
       const response = await fetch(`/api/admin/tags/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, slug, description }),
+        body: JSON.stringify({ name, slug }),
       });
 
       if (!response.ok) {
@@ -91,16 +89,6 @@ export default function EditTagPage() {
             className="mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
             required
           />
-        </div>
-        <div>
-          <label htmlFor="description" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Description</label>
-          <textarea
-            id="description"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            rows={4}
-            className="mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-          ></textarea>
         </div>
         <div className="flex items-center justify-end">
           <Button type="submit" disabled={submitting}>

@@ -11,21 +11,34 @@ export default function AdminTagsPage() {
   const [error, setError] = useState<string | null>(null);
   const [deletingTagId, setDeletingTagId] = useState<string | null>(null);
 
+  const fetchTags = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch('/api/admin/tags');
+      if (!response.ok) throw new Error('Failed to fetch tags');
+      const data: Tag[] = await response.json();
+      setTags(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An unknown error occurred');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchTags = async () => {
-      try {
-        setLoading(true);
-        const response = await fetch('/api/admin/tags');
-        if (!response.ok) throw new Error('Failed to fetch tags');
-        const data: Tag[] = await response.json();
-        setTags(data);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'An unknown error occurred');
-      } finally {
-        setLoading(false);
+    fetchTags();
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        fetchTags();
       }
     };
-    fetchTags();
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
   }, []);
 
   const handleDelete = async (tagId: string) => {

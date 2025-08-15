@@ -11,20 +11,34 @@ export default function AdminPostsPage() {
   const [error, setError] = useState<string | null>(null);
   const [deletingPostId, setDeletingPostId] = useState<string | null>(null);
 
+  const fetchPosts = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch('/api/admin/posts');
+      if (!response.ok) throw new Error('Failed to fetch posts');
+      const data: Post[] = await response.json();
+      setPosts(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An unknown error occurred');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchPosts = async () => {
-      try {
-        const response = await fetch('/api/admin/posts');
-        if (!response.ok) throw new Error('Failed to fetch posts');
-        const data: Post[] = await response.json();
-        setPosts(data);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'An unknown error occurred');
-      } finally {
-        setLoading(false);
+    fetchPosts();
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        fetchPosts();
       }
     };
-    fetchPosts();
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
   }, []);
 
   const handleDelete = async (postId: string) => {

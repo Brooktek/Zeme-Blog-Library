@@ -2,7 +2,7 @@
 
 // Defines the structure for a blog post, including relations.
 export type Post = {
-  id: number;
+  id: string; // Changed to string for UUID
   slug: string;
   title: string;
   content: string;
@@ -12,26 +12,25 @@ export type Post = {
   author?: {
     name: string;
   };
-  categories: {
-    id: number;
-    slug: string;
+  category: {
+    id: string; // Changed to string for UUID
     name: string;
   } | null;
   tags: {
-    id: number;
-    slug: string;
+    id: string; // Changed to string for UUID
     name: string;
   }[];
 };
 
 // Type for the data handled by the post form
 export type PostData = {
+  id?: string;
   title: string;
   slug: string;
   content: string;
-  category_id?: number;
+  category_id?: string; // Changed to string for UUID
   status: 'draft' | 'published';
-  // Note: tag_ids will be handled separately after post creation/update
+  tags?: { id: string; name: string }[]; // Added tags to pre-populate form
 };
 
 // Basic types for categories and tags used in forms and lists
@@ -43,4 +42,5 @@ export type Category = {
 export type Tag = {
   id: string;
   name: string;
+  slug: string;
 };
