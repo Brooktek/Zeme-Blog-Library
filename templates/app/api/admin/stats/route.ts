@@ -6,19 +6,19 @@ export async function GET() {
 
   try {
     const { count: postsCount, error: postsError } = await supabase
-      .from('blog_posts')
+      .from('posts')
       .select('*', { count: 'exact', head: true });
 
     if (postsError) throw postsError;
 
     const { count: categoriesCount, error: categoriesError } = await supabase
-      .from('blog_categories')
+      .from('categories')
       .select('*', { count: 'exact', head: true });
 
     if (categoriesError) throw categoriesError;
 
     const { count: tagsCount, error: tagsError } = await supabase
-      .from('blog_tags')
+      .from('tags')
       .select('*', { count: 'exact', head: true });
 
     if (tagsError) throw tagsError;
