@@ -30,6 +30,11 @@ Run the `install` command to automatically copy all the necessary routes, compon
 
 ```bash
 npx zeme-blog-system install
+``` 
+Then install
+```bash
+npx shadcn@latest add button
+npx shadcn@latest add sheet
 ```
 
 The installer will guide you through the required setup steps.
