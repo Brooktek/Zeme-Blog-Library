@@ -39,6 +39,7 @@ npx shadcn@latest add button
 npx shadcn@latest add sheet
 ```
 
+
 The installer will guide you through the required setup steps.
 
 For a complete walkthrough, see the [**Installation Guide**](./INSTALL.md).
@@ -58,29 +59,25 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
 
 You can find these keys in your Supabase project's **Settings > API** page.
 
-### 2. Supabase Storage Bucket
+## Storage Bucket Setup
 
-The blog system uses Supabase Storage to handle image uploads for post cover images. **No authentication is required** - images can be uploaded anonymously.
+1. Go to your Supabase dashboard
+2. Navigate to Storage > Buckets
+3. Create a new bucket named `post-images`
+4. Set the bucket to public (this allows unauthenticated uploads)
+5. Configure CORS if needed
 
-1.  Go to the **Storage** section in your Supabase dashboard.
-2.  Create a new public bucket named `post-images`.
-3.  Set up the following access policies for the `post-images` bucket to allow public reads and anonymous uploads:
+## Storage Policies
 
-    **For public read access (select/get):**
-    ```sql
-    -- Policy: Allow public read access to files in post-images
-    CREATE POLICY "Allow public read access" ON storage.objects
-    FOR SELECT
-    USING (bucket_id = 'post-images');
-    ```
+Make sure your storage bucket has the following policies for public access:
 
-    **For anonymous uploads (insert):**
-    ```sql
-    -- Policy: Allow anonymous uploads to post-images
-    CREATE POLICY "Allow anonymous uploads" ON storage.objects
-    FOR INSERT
-    WITH CHECK (bucket_id = 'post-images');
-    ```
+```sql
+-- Allow public read access
+CREATE POLICY "Public Access" ON storage.objects FOR SELECT USING (bucket_id = 'post-images');
+
+-- Allow public insert access (for uploads)
+CREATE POLICY "Public Insert" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'post-images');
+```
 
 ## What's Included?
 
