@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Post } from '@/lib/types'; // Using the centralized Post type
+import { Post } from '@/lib/types';
+import { Button } from '@/components/ui/button';
 
 export default function AdminPostsPage() {
   const [posts, setPosts] = useState<Post[]>([]);
@@ -38,7 +39,6 @@ export default function AdminPostsPage() {
           throw new Error('Failed to delete post');
         }
 
-        // Refresh the list after deletion
         setPosts(posts.filter(p => p.id.toString() !== postId));
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An unknown error occurred');
@@ -56,9 +56,9 @@ export default function AdminPostsPage() {
       <div className="py-8">
         <div className="flex justify-between items-center">
           <h1 className="text-4xl font-bold text-gray-800 dark:text-gray-100">Manage Posts</h1>
-          <Link href="/admin/posts/new">
-            <span className="inline-block bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 dark:hover:bg-indigo-500 transition-colors">New Post</span>
-          </Link>
+          <Button asChild>
+            <Link href="/admin/posts/new">New Post</Link>
+          </Button>
         </div>
         <div className="-mx-4 sm:-mx-8 px-4 sm:px-8 py-4 overflow-x-auto">
           <div className="inline-block min-w-full shadow rounded-lg overflow-hidden">
@@ -84,8 +84,8 @@ export default function AdminPostsPage() {
                       <p className="text-gray-900 dark:text-gray-100 whitespace-no-wrap">{post.title}</p>
                     </td>
                     <td className="px-5 py-5 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm">
-                      <p className={`capitalize font-semibold ${post.published ? 'text-green-600' : 'text-yellow-600'}`}>
-                        {post.published ? 'Published' : 'Draft'}
+                      <p className={`capitalize font-semibold ${post.status === 'published' ? 'text-green-600' : 'text-yellow-600'}`}>
+                        {post.status}
                       </p>
                     </td>
                     <td className="px-5 py-5 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm">
@@ -93,16 +93,18 @@ export default function AdminPostsPage() {
                         {new Date(post.created_at).toLocaleDateString()}
                       </p>
                     </td>
-                    <td className="px-5 py-5 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm text-right">
-                      <Link href={`/admin/posts/${post.id.toString()}/edit`}>
-                        <span className="text-indigo-600 hover:text-indigo-900 dark:hover:text-indigo-400 cursor-pointer">Edit</span>
-                      </Link>
-                      <button
+                    <td className="px-5 py-5 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm text-right space-x-2">
+                      <Button asChild variant="ghost" size="sm">
+                        <Link href={`/admin/posts/${post.id.toString()}/edit`}>Edit</Link>
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        size="sm"
                         onClick={() => handleDelete(post.id.toString())}
                         disabled={deletingPostId === post.id.toString()}
-                        className="text-red-600 hover:text-red-900 dark:hover:text-red-400 ml-4 disabled:opacity-50 disabled:cursor-not-allowed">
+                      >
                         {deletingPostId === post.id.toString() ? 'Deleting...' : 'Delete'}
-                      </button>
+                      </Button>
                     </td>
                   </tr>
                 ))}
@@ -110,17 +112,6 @@ export default function AdminPostsPage() {
             </table>
           </div>
         </div>
-                  </Link>
-                  <button
-                    onClick={() => handleDelete(post.id.toString())}
-                    className="text-red-600 hover:text-red-900 dark:hover:text-red-400 ml-4">
-                    Delete
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
       </div>
     </div>
   );
