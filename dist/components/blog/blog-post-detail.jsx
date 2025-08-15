@@ -38,7 +38,7 @@ function BlogPostDetail({ slug }) {
     };
     const loadRelatedPosts = async (currentPost) => {
         try {
-            const related = await (0, blog_api_1.getRelatedPosts)(currentPost.id, currentPost.blog_categories?.id);
+            const related = await (0, blog_api_1.getRelatedPosts)(currentPost.id, currentPost.categories?.id);
             setRelatedPosts(related);
         }
         catch (error) {
@@ -123,20 +123,20 @@ function BlogPostDetail({ slug }) {
           {post.excerpt && <p className="text-xl text-muted-foreground leading-relaxed">{post.excerpt}</p>}
 
           <div className="flex flex-wrap gap-2">
-            {post.blog_categories && (<badge_1.Badge variant="secondary" className="bg-primary/10 text-primary">
-                {post.blog_categories.name}
+            {post.categories && (<badge_1.Badge variant="secondary" className="bg-primary/10 text-primary">
+                {post.categories.name}
               </badge_1.Badge>)}
 
-            {post.blog_post_tags?.map((tagRelation) => (<badge_1.Badge key={tagRelation.blog_tags.id} variant="outline">
-                {tagRelation.blog_tags.name}
+            {post.post_tags?.map((tagRelation) => (<badge_1.Badge key={tagRelation.tags.id} variant="outline">
+                {tagRelation.tags.name}
               </badge_1.Badge>))}
           </div>
         </div>
       </div>
 
       {/* Featured Image */}
-      {post.featured_image_url && (<div className="mb-8 overflow-hidden rounded-lg">
-          <img src={post.featured_image_url || "/placeholder.svg"} alt={post.title} className="w-full h-64 md:h-96 object-cover"/>
+      {post.cover_image_url && (<div className="mb-8 overflow-hidden rounded-lg">
+          <img src={post.cover_image_url || "/placeholder.svg"} alt={post.title} className="w-full h-64 md:h-96 object-cover"/>
         </div>)}
 
       {/* Content */}

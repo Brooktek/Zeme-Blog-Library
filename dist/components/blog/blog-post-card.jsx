@@ -17,8 +17,8 @@ function BlogPostCard({ post, variant = "default" }) {
         })
         : null;
     return (<card_1.Card className={`group hover:shadow-lg transition-all duration-300 border-border/50 hover:border-border ${variant === "featured" ? "md:col-span-2 lg:col-span-3" : ""}`}>
-      {post.featured_image_url && (<div className={`overflow-hidden ${variant === "featured" ? "h-64" : "h-48"}`}>
-          <img src={post.featured_image_url || "/placeholder.svg"} alt={post.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"/>
+      {post.cover_image_url && (<div className={`overflow-hidden ${variant === "featured" ? "h-64" : "h-48"}`}>
+          <img src={post.cover_image_url || "/placeholder.svg"} alt={post.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"/>
         </div>)}
 
       <card_1.CardHeader className="space-y-3">
@@ -51,16 +51,16 @@ function BlogPostCard({ post, variant = "default" }) {
 
       <card_1.CardContent className="space-y-4">
         <div className="flex flex-wrap gap-2">
-          {post.blog_categories && (<badge_1.Badge variant="secondary" className="bg-primary/10 text-primary hover:bg-primary/20">
-              {post.blog_categories.name}
+          {post.categories && (<badge_1.Badge variant="secondary" className="bg-primary/10 text-primary hover:bg-primary/20">
+              {post.categories.name}
             </badge_1.Badge>)}
 
-          {post.blog_post_tags?.slice(0, 3).map((tagRelation) => (<badge_1.Badge key={tagRelation.blog_tags.id} variant="outline" className="text-xs">
-              {tagRelation.blog_tags.name}
+          {post.post_tags?.slice(0, 3).map((tagRelation) => (<badge_1.Badge key={tagRelation.tags.id} variant="outline" className="text-xs">
+              {tagRelation.tags.name}
             </badge_1.Badge>))}
 
-          {post.blog_post_tags && post.blog_post_tags.length > 3 && (<badge_1.Badge variant="outline" className="text-xs">
-              +{post.blog_post_tags.length - 3} more
+          {post.post_tags && post.post_tags.length > 3 && (<badge_1.Badge variant="outline" className="text-xs">
+              +{post.post_tags.length - 3} more
             </badge_1.Badge>)}
         </div>
 

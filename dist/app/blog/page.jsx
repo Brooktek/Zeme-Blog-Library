@@ -2,9 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = BlogPage;
 const blog_post_list_1 = require("@/components/blog/blog-post-list");
-const blog_api_1 = require("@/lib/blog-api");
-async function BlogPage() {
-    const [posts, categories] = await Promise.all([(0, blog_api_1.getBlogPosts)(), (0, blog_api_1.getBlogCategories)()]);
+function BlogPage() {
     return (<div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-12">
         <div className="text-center mb-12">
@@ -14,7 +12,7 @@ async function BlogPage() {
           </p>
         </div>
 
-        <blog_post_list_1.BlogPostList initialPosts={posts} initialCategories={categories} showFilters={true}/>
+        <blog_post_list_1.BlogPostList showFilters={true}/>
       </div>
     </div>);
 }

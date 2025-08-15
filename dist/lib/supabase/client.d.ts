@@ -5,7 +5,7 @@ export type BlogPost = {
     slug: string;
     excerpt: string | null;
     content: string;
-    featured_image_url: string | null;
+    cover_image_url: string | null;
     status: "draft" | "published" | "archived";
     published_at: string | null;
     created_at: string;
@@ -13,14 +13,14 @@ export type BlogPost = {
     reading_time: number;
     meta_title: string | null;
     meta_description: string | null;
-    blog_categories: {
+    categories: {
         id: string;
         name: string;
         slug: string;
         description: string | null;
     } | null;
-    blog_post_tags: Array<{
-        blog_tags: {
+    post_tags: Array<{
+        tags: {
             id: string;
             name: string;
             slug: string;
