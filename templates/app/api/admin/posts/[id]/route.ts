@@ -6,8 +6,8 @@ export async function GET(request: Request, { params: { id } }: { params: { id: 
   const supabase = await createSupabaseServerClient();
   try {
     const { data, error } = await supabase
-      .from('posts')
-      .select('*, categories(id, name), tags(id, name)')
+      .from('blog_posts')
+      .select('*, category:blog_categories(id, name), tags:blog_tags(id, name)')
       .eq('id', id)
       .single();
 
@@ -20,7 +20,14 @@ export async function GET(request: Request, { params: { id } }: { params: { id: 
       return NextResponse.json({ error: 'Post not found' }, { status: 404 });
     }
 
-    return NextResponse.json(data);
+    // Remap to match client-side expectations if needed, or adjust client-side
+    const post = {
+      ...data,
+      category: data.category,
+      tags: data.tags,
+    };
+
+    return NextResponse.json(post);
   } catch (error) {
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
@@ -30,44 +37,38 @@ export async function GET(request: Request, { params: { id } }: { params: { id: 
 export async function PUT(request: Request, { params: { id } }: { params: { id: string } }) {
   const supabase = await createSupabaseServerClient();
   try {
-    const { title, content, published, category_id, tag_ids } = await request.json();
+    const { title, content, slug, status, category_id, tag_ids } = await request.json();
 
-    // Update the post details
+    // 1. Update the post details, including the direct category_id link
     const { error: postUpdateError } = await supabase
-      .from('posts')
-      .update({ title, content, published })
+      .from('blog_posts')
+      .update({ 
+        title, 
+        content, 
+        slug,
+        status,
+        category_id: category_id || null 
+      })
       .eq('id', id);
 
     if (postUpdateError) throw postUpdateError;
 
-    // Handle category relationship
-    const { error: deleteCategoryError } = await supabase
-      .from('post_categories')
-      .delete()
-      .eq('post_id', id);
-
-    if (deleteCategoryError) throw deleteCategoryError;
-
-    if (category_id) {
-      const { error: insertCategoryError } = await supabase
-        .from('post_categories')
-        .insert({ post_id: parseInt(id), category_id: category_id });
-      if (insertCategoryError) throw insertCategoryError;
-    }
-
-    // Handle tags relationship
-    const { error: deleteTagsError } = await supabase.from('posts_tags').delete().eq('post_id', id);
+    // 2. Clear existing tag relationships for this post
+    const { error: deleteTagsError } = await supabase.from('blog_post_tags').delete().eq('post_id', id);
     if (deleteTagsError) throw deleteTagsError;
 
+    // 3. Insert new tag relationships if any are provided
     if (tag_ids && tag_ids.length > 0) {
       const tagsToInsert = tag_ids.map((tag_id: string) => ({ post_id: id, tag_id }));
-      const { error: insertTagsError } = await supabase.from('posts_tags').insert(tagsToInsert);
+      const { error: insertTagsError } = await supabase.from('blog_post_tags').insert(tagsToInsert);
       if (insertTagsError) throw insertTagsError;
     }
 
     return NextResponse.json({ message: 'Post updated successfully' });
   } catch (error) {
-    return NextResponse.json({ error: 'Failed to update post' }, { status: 500 });
+    const message = error instanceof Error ? error.message : 'An unknown error occurred';
+    console.error('Error updating post:', message);
+    return NextResponse.json({ error: 'Failed to update post', details: message }, { status: 500 });
   }
 }
 
@@ -75,19 +76,18 @@ export async function PUT(request: Request, { params: { id } }: { params: { id: 
 export async function DELETE(request: Request, { params: { id } }: { params: { id: string } }) {
   const supabase = await createSupabaseServerClient();
   try {
-    // First, delete related entries in junction tables
-    await supabase.from('post_categories').delete().eq('post_id', id);
-    await supabase.from('posts_tags').delete().eq('post_id', id);
-
-    // Then, delete the post itself
-    const { error } = await supabase.from('posts').delete().eq('id', id);
+    // The ON DELETE CASCADE constraint on blog_post_tags will handle tag relations.
+    // The category_id is ON DELETE SET NULL.
+    const { error } = await supabase.from('blog_posts').delete().eq('id', id);
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 400 });
     }
 
-    return NextResponse.json({ message: 'Post deleted successfully' });
+    return new NextResponse(null, { status: 204 }); // Standard for successful delete
   } catch (error) {
-    return NextResponse.json({ error: 'Failed to delete post' }, { status: 500 });
+    const message = error instanceof Error ? error.message : 'An unknown error occurred';
+    console.error('Error deleting post:', message);
+    return NextResponse.json({ error: 'Failed to delete post', details: message }, { status: 500 });
   }
 }

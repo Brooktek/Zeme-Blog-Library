@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
+import { Button } from '@/components/ui/button';
+import { Tag } from '@/lib/types';
 
 export default function EditTagPage() {
   const router = useRouter();
@@ -22,7 +24,7 @@ export default function EditTagPage() {
       try {
         const response = await fetch(`/api/admin/tags/${id}`);
         if (!response.ok) throw new Error('Failed to fetch tag data');
-        const data = await response.json();
+        const data: Tag = await response.json();
         setName(data.name);
         setSlug(data.slug);
         setDescription(data.description || '');
@@ -66,47 +68,44 @@ export default function EditTagPage() {
   return (
     <div className="p-6">
       <h1 className="text-2xl font-bold text-gray-800 dark:text-white mb-6">Edit Tag</h1>
-      <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-md">
+      <form onSubmit={handleSubmit} className="space-y-6 bg-white dark:bg-gray-800 p-8 rounded-lg shadow-md">
         {error && <div className="mb-4 text-red-500">Error: {error}</div>}
-        <div className="mb-4">
-          <label htmlFor="name" className="block text-gray-700 dark:text-gray-300 font-bold mb-2">Name</label>
+        <div>
+          <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Name</label>
           <input
             type="text"
             id="name"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="w-full px-3 py-2 border rounded-md dark:bg-gray-700 dark:text-white dark:border-gray-600"
+            className="mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
             required
           />
         </div>
-        <div className="mb-4">
-          <label htmlFor="slug" className="block text-gray-700 dark:text-gray-300 font-bold mb-2">Slug</label>
+        <div>
+          <label htmlFor="slug" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Slug</label>
           <input
             type="text"
             id="slug"
             value={slug}
             onChange={(e) => setSlug(e.target.value)}
-            className="w-full px-3 py-2 border rounded-md dark:bg-gray-700 dark:text-white dark:border-gray-600"
+            className="mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
             required
           />
         </div>
-        <div className="mb-6">
-          <label htmlFor="description" className="block text-gray-700 dark:text-gray-300 font-bold mb-2">Description</label>
+        <div>
+          <label htmlFor="description" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Description</label>
           <textarea
             id="description"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             rows={4}
-            className="w-full px-3 py-2 border rounded-md dark:bg-gray-700 dark:text-white dark:border-gray-600"
+            className="mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
           ></textarea>
         </div>
         <div className="flex items-center justify-end">
-          <button
-            type="submit"
-            disabled={submitting}
-            className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 disabled:bg-indigo-400">
+          <Button type="submit" disabled={submitting}>
             {submitting ? 'Saving...' : 'Save Changes'}
-          </button>
+          </Button>
         </div>
       </form>
     </div>

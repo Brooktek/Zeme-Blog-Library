@@ -2,17 +2,14 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-
-interface Category {
-  id: string;
-  name: string;
-  slug: string;
-}
+import { Category } from '@/lib/types';
+import { Button } from '@/components/ui/button';
 
 export default function AdminCategoriesPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [deletingCategoryId, setDeletingCategoryId] = useState<string | null>(null);
 
   async function fetchCategories() {
     try {
@@ -34,6 +31,7 @@ export default function AdminCategoriesPage() {
 
   const handleDelete = async (categoryId: string) => {
     if (window.confirm('Are you sure you want to delete this category? This might affect posts using it.')) {
+      setDeletingCategoryId(categoryId);
       try {
         const response = await fetch(`/api/admin/categories/${categoryId}`, {
           method: 'DELETE',
@@ -42,6 +40,8 @@ export default function AdminCategoriesPage() {
         setCategories(categories.filter(c => c.id !== categoryId));
       } catch (err: any) {
         setError(err.message);
+      } finally {
+        setDeletingCategoryId(null);
       }
     }
   };
@@ -53,9 +53,9 @@ export default function AdminCategoriesPage() {
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-gray-800 dark:text-white">Manage Categories</h1>
-        <Link href="/admin/categories/new">
-          <span className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 cursor-pointer">Create New Category</span>
-        </Link>
+        <Button asChild>
+          <Link href="/admin/categories/new">Create New Category</Link>
+        </Button>
       </div>
       <div className="bg-white dark:bg-gray-800 shadow-md rounded-lg overflow-hidden">
         <table className="min-w-full leading-normal">
@@ -79,15 +79,18 @@ export default function AdminCategoriesPage() {
                 <td className="px-5 py-5 border-b border-gray-200 dark:border-gray-700 text-sm">
                   <p className="text-gray-900 dark:text-white whitespace-no-wrap">{category.slug}</p>
                 </td>
-                <td className="px-5 py-5 border-b border-gray-200 dark:border-gray-700 text-sm text-right">
-                  <Link href={`/admin/categories/${category.id}/edit`}>
-                    <span className="text-indigo-600 hover:text-indigo-900 dark:hover:text-indigo-400 cursor-pointer">Edit</span>
-                  </Link>
-                  <button
+                <td className="px-5 py-5 border-b border-gray-200 dark:border-gray-700 text-sm text-right space-x-2">
+                  <Button asChild variant="ghost" size="sm">
+                    <Link href={`/admin/categories/${category.id}/edit`}>Edit</Link>
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    size="sm"
                     onClick={() => handleDelete(category.id)}
-                    className="text-red-600 hover:text-red-900 dark:hover:text-red-400 ml-4">
-                    Delete
-                  </button>
+                    disabled={deletingCategoryId === category.id}
+                  >
+                    {deletingCategoryId === category.id ? 'Deleting...' : 'Delete'}
+                  </Button>
                 </td>
               </tr>
             ))}

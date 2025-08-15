@@ -56,7 +56,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <SheetContent side="left" className="flex flex-col">
               <nav className="grid gap-2 text-lg font-medium">
                 <Link
-                  href="#"
+                  href="/admin"
                   className="flex items-center gap-2 text-lg font-semibold mb-4"
                 >
                   <BookCopy className="h-6 w-6" />
@@ -93,9 +93,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               </nav>
             </SheetContent>
           </Sheet>
-          <div className="w-full flex-1">
-            <h1 className="text-lg font-semibold">Dashboard</h1>
-          </div>
         </header>
         <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6">
           {children}

@@ -3,10 +3,10 @@ import { NextResponse } from 'next/server';
 
 // GET a single tag by ID
 export async function GET(request: Request, { params }: { params: { id: string } }) {
-  const supabase = createClient();
+  const supabase = await createSupabaseServerClient();
   try {
     const { data, error } = await supabase
-      .from('tags')
+      .from('blog_tags')
       .select('*')
       .eq('id', params.id)
       .single();
@@ -27,12 +27,12 @@ export async function GET(request: Request, { params }: { params: { id: string }
 
 // UPDATE a tag
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
-  const supabase = createSupabaseServerClient();
+  const supabase = await createSupabaseServerClient();
   try {
     const { name, slug } = await request.json();
 
-    const { data, error } = await supabase
-      .from('tags')
+    const { error } = await supabase
+      .from('blog_tags')
       .update({ name, slug })
       .eq('id', params.id);
 
@@ -56,12 +56,10 @@ export async function PUT(request: Request, { params }: { params: { id: string }
 
 // DELETE a tag
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
-  const supabase = createClient();
+  const supabase = await createSupabaseServerClient();
   try {
-    // Manually delete associations in posts_tags first
-    await supabase.from('posts_tags').delete().eq('tag_id', params.id);
-
-    const { error } = await supabase.from('tags').delete().eq('id', params.id);
+    // The ON DELETE CASCADE constraint on blog_post_tags handles associations.
+    const { error } = await supabase.from('blog_tags').delete().eq('id', params.id);
 
     if (error) throw error;
 

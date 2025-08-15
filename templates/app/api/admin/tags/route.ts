@@ -5,7 +5,7 @@ export async function GET() {
   const supabase = await createSupabaseServerClient();
   try {
     const { data, error } = await supabase
-      .from('tags')
+      .from('blog_tags')
       .select('id, name, slug') // Corrected to select only existing columns
       .order('name', { ascending: true });
 
@@ -28,7 +28,7 @@ export async function POST(request: Request) {
     const { name, slug } = await request.json();
 
     const { data, error } = await supabase
-      .from('tags')
+      .from('blog_tags')
       .insert({ name, slug })
       .select()
       .single();
